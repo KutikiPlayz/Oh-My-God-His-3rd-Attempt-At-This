@@ -150,7 +150,6 @@ class FunkinLua {
 		set('healthGainMult', game.healthGain);
 		set('healthLossMult', game.healthLoss);
 		#if FLX_PITCH set('playbackRate', game.playbackRate); #end
-		set('guitarHeroSustains', game.guitarHeroSustains);
 		set('instakillOnMiss', game.instakillOnMiss);
 		set('botPlay', game.cpuControlled);
 		set('practice', game.practiceMode);
