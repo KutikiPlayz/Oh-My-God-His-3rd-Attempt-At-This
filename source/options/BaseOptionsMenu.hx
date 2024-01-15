@@ -226,8 +226,8 @@ class BaseOptionsMenu extends MusicBeatSubstate
 									curOption.setValue(curOption.options[num]); //lol
 									//trace(curOption.options[num]);
 							}
-							updateTextFrom(curOption);
 							curOption.change();
+							updateTextFrom(curOption);
 							FlxG.sound.play(Paths.sound('scrollMenu'));
 						}
 						else if(curOption.type != 'string')
@@ -244,8 +244,8 @@ class BaseOptionsMenu extends MusicBeatSubstate
 								case 'float' | 'percent':
 									curOption.setValue(FlxMath.roundDecimal(holdValue, curOption.decimals));
 							}
-							updateTextFrom(curOption);
 							curOption.change();
+							updateTextFrom(curOption);
 						}
 					}
 
@@ -277,6 +277,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 					updateBind(leOption);
 				}
 				leOption.change();
+				if (leOption.type != 'keybind') if (leOption.type != 'bool') updateTextFrom(leOption);
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 				reloadCheckboxes();
 			}

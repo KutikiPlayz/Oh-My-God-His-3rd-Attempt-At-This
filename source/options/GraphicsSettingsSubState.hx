@@ -48,20 +48,53 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		#if !html5 //Apparently other framerates isn't correctly supported on Browser? Probably it has some V-Sync shit enabled by default, idk
 		var option:Option = new Option('Framerate',
 			"Pretty self explanatory, isn't it?",
-			'framerate',
+			'framerateOption',
 			'int');
 		addOption(option);
 
-		final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
-		option.minValue = 60;
-		option.maxValue = 240;
-		option.defaultValue = Std.int(FlxMath.bound(refreshRate, option.minValue, option.maxValue));
-		option.displayFormat = '%v FPS';
-		option.onChange = onChangeFramerate;
+		option.minValue = 0;
+		option.maxValue = 5;
+		option.defaultValue = 0;
+		option.displayFormat = getFramerateText(ClientPrefs.data.framerateOption, true);
+		option.onChange = function() {
+			var framerate = getFramerateText(ClientPrefs.data.framerateOption);
+			ClientPrefs.data.framerate = framerate;
+			option.displayFormat = framerate == 999 ? 'Uncapped' : '$framerate FPS';
+	
+			if(ClientPrefs.data.framerate > FlxG.drawFramerate)
+			{
+				FlxG.updateFramerate = ClientPrefs.data.framerate;
+				FlxG.drawFramerate = ClientPrefs.data.framerate;
+			}
+			else
+			{
+				FlxG.drawFramerate = ClientPrefs.data.framerate;
+				FlxG.updateFramerate = ClientPrefs.data.framerate;
+			}
+		};
 		#end
 
 		super();
 		insert(1, boyfriend);
+	}
+
+	function getFramerateText(option:Int, asText:Bool = false):Any {
+		var framerate = "";
+		switch (option) {
+			case 0:
+				framerate = "60" + (asText ? " FPS" : "");
+			case 1:
+				framerate = "75" + (asText ? " FPS" : "");
+			case 2:
+				framerate = "120" + (asText ? " FPS" : "");
+			case 3:
+				framerate = "144" + (asText ? " FPS" : "");
+			case 4:
+				framerate = "240" + (asText ? " FPS" : "");
+			case 5:
+				framerate = asText ? "Uncapped" : "999";
+		}
+		return asText ? framerate : Std.parseInt(framerate);
 	}
 
 	function onChangeAntiAliasing()
@@ -72,20 +105,6 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 			if(sprite != null && (sprite is FlxSprite) && !(sprite is FlxText)) {
 				sprite.antialiasing = ClientPrefs.data.antialiasing;
 			}
-		}
-	}
-
-	function onChangeFramerate()
-	{
-		if(ClientPrefs.data.framerate > FlxG.drawFramerate)
-		{
-			FlxG.updateFramerate = ClientPrefs.data.framerate;
-			FlxG.drawFramerate = ClientPrefs.data.framerate;
-		}
-		else
-		{
-			FlxG.drawFramerate = ClientPrefs.data.framerate;
-			FlxG.updateFramerate = ClientPrefs.data.framerate;
 		}
 	}
 

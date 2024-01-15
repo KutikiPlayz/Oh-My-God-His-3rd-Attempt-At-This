@@ -66,7 +66,7 @@ class FPSCounter extends TextField
 		+ '\nMemory: ${flixel.util.FlxStringUtil.formatBytes(memoryMegas)}';
 
 		textColor = 0xFFFFFFFF;
-		if (currentFPS < FlxG.drawFramerate * 0.5)
+		if (currentFPS < Math.min(FlxG.drawFramerate * 0.5, 60))
 			textColor = 0xFFFF0000;
 	}
 
