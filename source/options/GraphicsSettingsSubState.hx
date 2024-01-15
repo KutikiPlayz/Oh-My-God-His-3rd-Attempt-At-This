@@ -1,5 +1,6 @@
 package options;
 
+import openfl.Lib;
 import objects.Character;
 
 class GraphicsSettingsSubState extends BaseOptionsMenu
@@ -46,6 +47,29 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		#if !html5 //Apparently other framerates isn't correctly supported on Browser? Probably it has some V-Sync shit enabled by default, idk
+		var option:Option = new Option('Resolution',
+			"Pretty self explanatory, isn't it?",
+			'resolutionOption',
+			'int');
+		addOption(option);
+
+		option.minValue = 0;
+		option.maxValue = 4;
+		option.defaultValue = 0;
+		option.displayFormat = getResolution(ClientPrefs.data.resolutionOption, true);
+		option.onChange = function() {
+			var resolution = getResolution(ClientPrefs.data.resolutionOption);
+			ClientPrefs.data.resolution = resolution;
+			option.displayFormat = getResolution(ClientPrefs.data.resolutionOption, true);
+
+			var resArray:Array<Int> = cast resolution;
+			FlxG.resizeWindow(resArray[0], resArray[1]);
+			FlxG.resizeGame(resArray[0], resArray[1]);
+
+			var displaySize = Lib.application.window.display.bounds;
+			Lib.application.window.move(Std.int(displaySize.width / 2 - resArray[0] / 2), Std.int(displaySize.height / 2 - resArray[1] / 2));
+		};
+
 		var option:Option = new Option('Framerate',
 			"Pretty self explanatory, isn't it?",
 			'framerateOption',
@@ -55,9 +79,9 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		option.minValue = 0;
 		option.maxValue = 5;
 		option.defaultValue = 0;
-		option.displayFormat = getFramerateText(ClientPrefs.data.framerateOption, true);
+		option.displayFormat = getFramerate(ClientPrefs.data.framerateOption, true);
 		option.onChange = function() {
-			var framerate = getFramerateText(ClientPrefs.data.framerateOption);
+			var framerate = getFramerate(ClientPrefs.data.framerateOption);
 			ClientPrefs.data.framerate = framerate;
 			option.displayFormat = framerate == 999 ? 'Uncapped' : '$framerate FPS';
 	
@@ -78,7 +102,31 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		insert(1, boyfriend);
 	}
 
-	function getFramerateText(option:Int, asText:Bool = false):Any {
+	function getResolution(option:Int, asText:Bool = false):Any {
+		var resolution:Any;
+		if (asText) resolution = "1280 x 720 HD";
+		else resolution = [1280, 720];
+		switch (option) {
+			case 0:
+				if (asText) resolution = "640 x 360";
+				else resolution = [640, 360];
+			case 1:
+				if (asText) resolution = "1280 x 720 HD";
+				else resolution = [1280, 720];
+			case 2:
+				if (asText) resolution = "1920 x 1080 Full HD";
+				else resolution = [1920, 1080];
+			case 3:
+				if (asText) resolution = "2560 x 1440 2K";
+				else resolution = [2560, 1440];
+			case 4:
+				if (asText) resolution = "3840 x 2160 4K";
+				else resolution = [3840, 2160];
+		}
+		return resolution;
+	}
+
+	function getFramerate(option:Int, asText:Bool = false):Any {
 		var framerate = "";
 		switch (option) {
 			case 0:

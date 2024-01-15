@@ -103,10 +103,13 @@ class Main extends Sprite
 		}
 	
 		#if LUA_ALLOWED Lua.set_callbacks_function(cpp.Callable.fromStaticFunction(psychlua.CallbackHandler.call)); #end
-		Controls.instance = new Controls();
-		ClientPrefs.loadDefaultKeys();
 		#if ACHIEVEMENTS_ALLOWED Achievements.load(); #end
 		addChild(new FlxGame(game.width, game.height, game.initialState, #if (flixel < "5.0.0") game.zoom, #end game.framerate, game.framerate, game.skipSplash, game.startFullscreen));
+
+		FlxG.save.bind('funkin', CoolUtil.getSavePath());
+		Controls.instance = new Controls();
+		ClientPrefs.loadDefaultKeys();
+		ClientPrefs.loadPrefs();
 
 		#if !mobile
 		fpsVar = new FPSCounter(10, 3, 0xFFFFFF);

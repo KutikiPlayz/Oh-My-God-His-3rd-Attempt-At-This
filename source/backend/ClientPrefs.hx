@@ -1,5 +1,6 @@
 package backend;
 
+import openfl.Lib;
 import flixel.util.FlxSave;
 import flixel.input.keyboard.FlxKey;
 import flixel.input.gamepad.FlxGamepadInputID;
@@ -21,6 +22,8 @@ import states.TitleState;
 	public var lowQuality:Bool = false;
 	public var shaders:Bool = true;
 	public var cacheOnGPU:Bool = #if !switch false #else true #end; //From Stilic
+	public var resolution:Array<Int> = [1280, 720];
+	public var resolutionOption:Int = 1;
 	public var framerate:Int = 60;
 	public var framerateOption:Int = 0;
 	public var camZooms:Bool = true;
@@ -186,6 +189,14 @@ class ClientPrefs {
 			data.framerate = Std.int(FlxMath.bound(refreshRate, 60, 240));
 		}
 		#end
+
+		Lib.application.window.resizable = false;
+		var resArray = ClientPrefs.data.resolution;
+		FlxG.resizeWindow(resArray[0], resArray[1]);
+		FlxG.resizeGame(resArray[0], resArray[1]);
+
+		var displaySize = Lib.application.window.display.bounds;
+		Lib.application.window.move(Std.int(displaySize.width / 2 - resArray[0] / 2), Std.int(displaySize.height / 2 - resArray[1] / 2));
 
 		if(data.framerate > FlxG.drawFramerate)
 		{
