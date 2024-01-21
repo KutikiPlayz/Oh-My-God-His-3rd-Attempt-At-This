@@ -22,8 +22,7 @@ import states.TitleState;
 	public var lowQuality:Bool = false;
 	public var shaders:Bool = true;
 	public var cacheOnGPU:Bool = #if !switch false #else true #end; //From Stilic
-	public var resolution:Array<Int> = [1280, 720];
-	public var resolutionOption:Int = 1;
+	public var windowMode:String = "Windowed";
 	public var framerate:Int = 60;
 	public var framerateOption:Int = 0;
 	public var camZooms:Bool = true;
@@ -184,19 +183,36 @@ class ClientPrefs {
 		#if (!html5 && !switch)
 		FlxG.autoPause = ClientPrefs.data.autoPause;
 
+		Lib.application.window.resizable = false;
+		var displaySize = Lib.application.window.display.bounds;
+		var windowedSize = [Std.int(displaySize.width / 1.5), Std.int(displaySize.height / 1.5)];
+
+		switch (ClientPrefs.data.windowMode) {
+			case "Windowed":
+				FlxG.resizeWindow(windowedSize[0], windowedSize[1]);
+				FlxG.resizeGame(windowedSize[0], windowedSize[1]);
+				Lib.application.window.move(Std.int(displaySize.width / 2 - windowedSize[0] / 2), Std.int(displaySize.height / 2 - windowedSize[1] / 2));
+				Lib.application.window.borderless = false;
+				FlxG.fullscreen = false;
+			case "Borderless Windowed":
+				FlxG.resizeWindow(Std.int(displaySize.width), Std.int(displaySize.height));
+				FlxG.resizeGame(Std.int(displaySize.width), Std.int(displaySize.height));
+				Lib.application.window.move(0, 0);
+				Lib.application.window.borderless = true;
+				FlxG.fullscreen = false;
+			case "Fullscreen":
+				FlxG.resizeWindow(windowedSize[0], windowedSize[1]);
+				FlxG.resizeGame(windowedSize[0], windowedSize[1]);
+				Lib.application.window.move(Std.int(displaySize.width / 2 - windowedSize[0] / 2), Std.int(displaySize.height / 2 - windowedSize[1] / 2));
+				Lib.application.window.borderless = false;
+				FlxG.fullscreen = true;
+		}
+
 		if(FlxG.save.data.framerate == null) {
 			final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
 			data.framerate = Std.int(FlxMath.bound(refreshRate, 60, 240));
 		}
 		#end
-
-		Lib.application.window.resizable = false;
-		var resArray = ClientPrefs.data.resolution;
-		FlxG.resizeWindow(resArray[0], resArray[1]);
-		FlxG.resizeGame(resArray[0], resArray[1]);
-
-		var displaySize = Lib.application.window.display.bounds;
-		Lib.application.window.move(Std.int(displaySize.width / 2 - resArray[0] / 2), Std.int(displaySize.height / 2 - resArray[1] / 2));
 
 		if(data.framerate > FlxG.drawFramerate)
 		{

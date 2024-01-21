@@ -1,5 +1,6 @@
 package options;
 
+import lime.app.Application;
 import openfl.Lib;
 import objects.Character;
 
@@ -46,31 +47,40 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 			'bool');
 		addOption(option);
 
-		#if !html5 //Apparently other framerates isn't correctly supported on Browser? Probably it has some V-Sync shit enabled by default, idk
-		var option:Option = new Option('Resolution',
+		#if !html5
+		var option:Option = new Option('Window Mode:',
 			"Pretty self explanatory, isn't it?",
-			'resolutionOption',
-			'int');
+			'windowMode',
+			'string',
+			['Windowed', 'Borderless Windowed', 'Fullscreen']);
 		addOption(option);
-
-		option.minValue = 0;
-		option.maxValue = 4;
-		option.defaultValue = 0;
-		option.displayFormat = getResolution(ClientPrefs.data.resolutionOption, true);
 		option.onChange = function() {
-			var resolution = getResolution(ClientPrefs.data.resolutionOption);
-			ClientPrefs.data.resolution = resolution;
-			option.displayFormat = getResolution(ClientPrefs.data.resolutionOption, true);
-
-			var resArray:Array<Int> = cast resolution;
-			FlxG.resizeWindow(resArray[0], resArray[1]);
-			FlxG.resizeGame(resArray[0], resArray[1]);
-
 			var displaySize = Lib.application.window.display.bounds;
-			Lib.application.window.move(Std.int(displaySize.width / 2 - resArray[0] / 2), Std.int(displaySize.height / 2 - resArray[1] / 2));
+			var windowedSize = [Std.int(displaySize.width / 1.5), Std.int(displaySize.height / 1.5)];
+
+			switch (ClientPrefs.data.windowMode) {
+				case "Windowed":
+					FlxG.resizeWindow(windowedSize[0], windowedSize[1]);
+					FlxG.resizeGame(windowedSize[0], windowedSize[1]);
+					Lib.application.window.move(Std.int(displaySize.width / 2 - windowedSize[0] / 2), Std.int(displaySize.height / 2 - windowedSize[1] / 2));
+					Lib.application.window.borderless = false;
+					FlxG.fullscreen = false;
+				case "Borderless Windowed":
+					FlxG.resizeWindow(Std.int(displaySize.width), Std.int(displaySize.height));
+					FlxG.resizeGame(Std.int(displaySize.width), Std.int(displaySize.height));
+					Lib.application.window.move(0, 0);
+					Lib.application.window.borderless = true;
+					FlxG.fullscreen = false;
+				case "Fullscreen":
+					FlxG.resizeWindow(windowedSize[0], windowedSize[1]);
+					FlxG.resizeGame(windowedSize[0], windowedSize[1]);
+					Lib.application.window.move(Std.int(displaySize.width / 2 - windowedSize[0] / 2), Std.int(displaySize.height / 2 - windowedSize[1] / 2));
+					Lib.application.window.borderless = false;
+					FlxG.fullscreen = true;
+			}
 		};
 
-		var option:Option = new Option('Framerate',
+		var option:Option = new Option('Framerate:',
 			"Pretty self explanatory, isn't it?",
 			'framerateOption',
 			'int');
