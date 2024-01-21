@@ -175,6 +175,12 @@ class TitleState extends MusicBeatState
 	var titleText:FlxSprite;
 	var swagShader:ColorSwap = null;
 
+	var exitBlack:FlxSprite;
+	var exitText:Alphabet;
+	var exitYes:Alphabet;
+	var exitNo:Alphabet;
+	var exitSelected:Bool = true;
+
 	function startIntro()
 	{
 		if (!initialized)
@@ -308,6 +314,26 @@ class TitleState extends MusicBeatState
 		ngSpr.screenCenter(X);
 		ngSpr.antialiasing = ClientPrefs.data.antialiasing;
 
+		exitBlack = new FlxSprite(0, 0).makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		exitBlack.alpha = 0;
+		add(exitBlack);
+
+		exitText = new Alphabet(FlxG.width / 2, FlxG.height / 2 - 150, "Are you sure\nyou want to quit?");
+		exitText.alignment = CENTERED;
+		exitText.scale.set(0.9, 0.9);
+		exitText.alpha = 0;
+		add(exitText);
+
+		exitYes = new Alphabet(FlxG.width / 2 - 200, FlxG.height / 2 + 50, "Yes");
+		exitYes.alignment = CENTERED;
+		exitYes.alpha = 0;
+		add(exitYes);
+
+		exitNo = new Alphabet(FlxG.width / 2 + 100, FlxG.height / 2 + 50, "No");
+		exitNo.alignment = CENTERED;
+		exitNo.alpha = 0;
+		add(exitNo);
+
 		if (initialized)
 			skipIntro();
 		else
@@ -336,6 +362,7 @@ class TitleState extends MusicBeatState
 	}
 
 	var transitioning:Bool = false;
+	var exiting:Bool = false;
 	private static var playJingle:Bool = false;
 	
 	var newTitle:Bool = false;
@@ -348,6 +375,7 @@ class TitleState extends MusicBeatState
 		// FlxG.watch.addQuick('amp', FlxG.sound.music.amplitude);
 
 		var pressedEnter:Bool = FlxG.keys.justPressed.ENTER || controls.ACCEPT;
+		var pressedEsc:Bool = FlxG.keys.justPressed.ESCAPE || controls.BACK;
 
 		#if mobile
 		for (touch in FlxG.touches.list)
@@ -393,7 +421,7 @@ class TitleState extends MusicBeatState
 				titleText.alpha = FlxMath.lerp(titleTextAlphas[0], titleTextAlphas[1], timer);
 			}
 			
-			if(pressedEnter)
+			if(pressedEnter && !exiting)
 			{
 				titleText.color = FlxColor.WHITE;
 				titleText.alpha = 1;
@@ -467,6 +495,37 @@ class TitleState extends MusicBeatState
 				}
 			}
 			#end
+
+			if (pressedEsc) {
+				exiting = !exiting;
+
+				FlxTween.tween(exitBlack, {alpha: exiting ? 0.75 : 0}, 0.2);
+				FlxTween.tween(exitText, {alpha: exiting ? 1 : 0}, 0.2);
+				FlxTween.tween(exitYes, {alpha: exiting ? 1 : 0}, 0.2);
+				FlxTween.tween(exitNo, {alpha: exiting ? 1 : 0}, 0.2);
+			}
+
+			if (exiting) {
+				if (controls.UI_LEFT_P || controls.UI_RIGHT_P) exitSelected = !exitSelected;
+
+				exitYes.scaleX = FlxMath.lerp(exitYes.scaleX, exitSelected ? 1.1 : 0.9, elapsed * 20);
+				exitYes.scaleY = FlxMath.lerp(exitYes.scaleY, exitSelected ? 1.1 : 0.9, elapsed * 20);
+				exitYes.offset.x = FlxMath.lerp(exitYes.offset.x, exitSelected ? 10 : 0, elapsed * 20);
+				exitNo.scaleX = FlxMath.lerp(exitNo.scaleX, !exitSelected ? 1.1 : 0.9, elapsed * 20);
+				exitNo.scaleY = FlxMath.lerp(exitNo.scaleY, !exitSelected ? 1.1 : 0.9, elapsed * 20);
+				exitNo.offset.x = FlxMath.lerp(exitNo.offset.x, !exitSelected ? 7 : 0, elapsed * 20);
+
+				if (pressedEnter) {
+					if (exitSelected)
+						Sys.exit(0);
+					else {
+						FlxTween.tween(exitBlack, {alpha: 0}, 0.2);
+						FlxTween.tween(exitText, {alpha: 0}, 0.2);
+						FlxTween.tween(exitYes, {alpha: 0}, 0.2);
+						FlxTween.tween(exitNo, {alpha: 0}, 0.2, {onComplete: function(twn:FlxTween) { exiting = false; }});
+					}
+				}
+			}
 		}
 
 		if (initialized && pressedEnter && !skippedIntro)
@@ -474,11 +533,11 @@ class TitleState extends MusicBeatState
 			skipIntro();
 		}
 
-		if(swagShader != null)
-		{
-			if(controls.UI_LEFT) swagShader.hue -= elapsed * 0.1;
-			if(controls.UI_RIGHT) swagShader.hue += elapsed * 0.1;
-		}
+		// if(swagShader != null)
+		// {
+		// 	if(controls.UI_LEFT) swagShader.hue -= elapsed * 0.1;
+		// 	if(controls.UI_RIGHT) swagShader.hue += elapsed * 0.1;
+		// }
 
 		super.update(elapsed);
 	}
