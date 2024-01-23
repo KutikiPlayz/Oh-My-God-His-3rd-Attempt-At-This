@@ -1,5 +1,6 @@
 package states;
 
+import backend.Song;
 import lime.app.Promise;
 import lime.app.Future;
 
@@ -65,8 +66,9 @@ class LoadingState extends MusicBeatState
 				var introComplete = callbacks.add("introComplete");
 				if (PlayState.SONG != null) {
 					checkLoadSong(getSongPath());
-					if (PlayState.SONG.needsVoices)
+					try {
 						checkLoadSong(getVocalPath());
+					}
 				}
 				if(directory != null && directory.length > 0 && directory != 'shared') {
 					checkLibrary('week_assets');

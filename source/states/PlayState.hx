@@ -1265,14 +1265,11 @@ class PlayState extends MusicBeatState
 		opponentVocals = new FlxSound();
 		try
 		{
-			if (songData.needsVoices)
-			{
-				var playerVocals = Paths.voices(songData.song, (boyfriend.vocalsFile == null || boyfriend.vocalsFile.length < 1) ? 'Player' : boyfriend.vocalsFile);
-				vocals.loadEmbedded(playerVocals != null ? playerVocals : Paths.voices(songData.song));
-				
-				var oppVocals = Paths.voices(songData.song, (dad.vocalsFile == null || dad.vocalsFile.length < 1) ? 'Opponent' : dad.vocalsFile);
-				if(oppVocals != null) opponentVocals.loadEmbedded(oppVocals);
-			}
+			var playerVocals = Paths.voices(songData.song, (boyfriend.vocalsFile == null || boyfriend.vocalsFile.length < 1) ? 'Player' : boyfriend.vocalsFile);
+			vocals.loadEmbedded(playerVocals != null ? playerVocals : Paths.voices(songData.song));
+			
+			var oppVocals = Paths.voices(songData.song, (dad.vocalsFile == null || dad.vocalsFile.length < 1) ? 'Opponent' : dad.vocalsFile);
+			if(oppVocals != null) opponentVocals.loadEmbedded(oppVocals);
 		}
 		catch(e:Dynamic) {}
 
@@ -3045,15 +3042,17 @@ class PlayState extends MusicBeatState
 	var lastStepHit:Int = -1;
 	override function stepHit()
 	{
-		if (SONG.needsVoices && FlxG.sound.music.time >= -ClientPrefs.data.noteOffset)
-		{
-			var timeSub:Float = Conductor.songPosition - Conductor.offset;
-			var syncTime:Float = 20 * playbackRate;
-			if (Math.abs(FlxG.sound.music.time - timeSub) > syncTime ||
-			(vocals.length > 0 && Math.abs(vocals.time - timeSub) > syncTime) ||
-			(opponentVocals.length > 0 && Math.abs(opponentVocals.time - timeSub) > syncTime))
+		try {
+			if (FlxG.sound.music.time >= -ClientPrefs.data.noteOffset)
 			{
-				resyncVocals();
+				var timeSub:Float = Conductor.songPosition - Conductor.offset;
+				var syncTime:Float = 20 * playbackRate;
+				if (Math.abs(FlxG.sound.music.time - timeSub) > syncTime ||
+				(vocals.length > 0 && Math.abs(vocals.time - timeSub) > syncTime) ||
+				(opponentVocals.length > 0 && Math.abs(opponentVocals.time - timeSub) > syncTime))
+				{
+					resyncVocals();
+				}
 			}
 		}
 

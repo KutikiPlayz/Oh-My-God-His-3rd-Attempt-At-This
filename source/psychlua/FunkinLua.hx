@@ -106,7 +106,6 @@ class FunkinLua {
 		set('weekRaw', PlayState.storyWeek);
 		set('week', WeekData.weeksList[PlayState.storyWeek]);
 		set('seenCutscene', PlayState.seenCutscene);
-		set('hasVocals', PlayState.SONG.needsVoices);
 
 		// Camera poo
 		set('cameraX', 0);
