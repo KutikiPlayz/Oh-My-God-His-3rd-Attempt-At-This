@@ -7,7 +7,7 @@ class Bar extends FlxSpriteGroup
 	public var leftBar:FlxSprite;
 	public var rightBar:FlxSprite;
 	public var bg:FlxSprite;
-	public var valueFunction:Void->Float = null;
+	public var valueFunction:Float->Float = null;
 	public var percent(default, set):Float = 0;
 	public var bounds:Dynamic = {min: 0, max: 1};
 	public var leftToRight(default, set):Bool = true;
@@ -18,7 +18,7 @@ class Bar extends FlxSpriteGroup
 	public var barHeight(default, set):Int = 1;
 	public var barOffset:FlxPoint = new FlxPoint(3, 3);
 
-	public function new(x:Float, y:Float, image:String = 'healthBar', valueFunction:Void->Float = null, boundX:Float = 0, boundY:Float = 1)
+	public function new(x:Float, y:Float, image:String = 'healthBar', valueFunction:Float->Float = null, boundX:Float = 0, boundY:Float = 1)
 	{
 		super(x, y);
 		
@@ -54,7 +54,7 @@ class Bar extends FlxSpriteGroup
 
 		if(valueFunction != null)
 		{
-			var value:Null<Float> = FlxMath.remapToRange(FlxMath.bound(valueFunction(), bounds.min, bounds.max), bounds.min, bounds.max, 0, 100);
+			var value:Null<Float> = FlxMath.remapToRange(FlxMath.bound(valueFunction(elapsed), bounds.min, bounds.max), bounds.min, bounds.max, 0, 100);
 			percent = (value != null ? value : 0);
 		}
 		else percent = 0;
