@@ -32,6 +32,7 @@ import backend.Conductor;
 import backend.BaseStage;
 import backend.Difficulty;
 import backend.Mods;
+import backend.BetterFlxCamera as FlxCamera;
 
 import objects.Alphabet;
 import objects.BGSprite;
@@ -47,7 +48,6 @@ import flxanimate.*;
 import flixel.sound.FlxSound;
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.FlxCamera;
 import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.util.FlxColor;

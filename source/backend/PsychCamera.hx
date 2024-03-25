@@ -21,6 +21,8 @@ class PsychCamera extends FlxCamera
 
 		updateFlashSpritePosition();
 		updateShake(elapsed);
+
+		super.update(elapsed);
 	}
 
 	public function updateFollowDelta(?elapsed:Float = 0):Void
