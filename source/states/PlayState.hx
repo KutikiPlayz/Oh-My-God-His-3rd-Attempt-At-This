@@ -529,7 +529,7 @@ class PlayState extends MusicBeatState
 		moveCameraSection();
 
 		healthBar = new Bar(0, FlxG.height * (!ClientPrefs.data.downScroll ? 0.89 : 0.11), 'healthBar', function(elapsed:Float) {
-			lHealth = FlxMath.lerp(lHealth, health, elapsed * 10);
+			lHealth = FlxMath.lerp(lHealth, health, elapsed * 10 / playbackRate);
 			return lHealth;
 		}, 0, 2);
 		healthBar.screenCenter(X);
