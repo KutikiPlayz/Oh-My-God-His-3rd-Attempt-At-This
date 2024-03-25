@@ -2,7 +2,7 @@ package backend;
 
 class BetterFlxCamera extends flixel.FlxCamera {
     public var betterShake:Bool = true;
-	public var betterShakeHardness:Float = 0.5;
+	public var betterShakeHardness:Float = 0.4;
 	public var betterShakeFadeTime:Float = 0.15;
 
 
@@ -47,21 +47,21 @@ class BetterFlxCamera extends flixel.FlxCamera {
     }
 
     override function updateShake(elapsed:Float) {
-        var cool = betterShake ? -betterShakeFadeTime : 0;
+        var fadeTime = betterShake ? -FlxMath.bound(_fxShakeDuration * 0.5, betterShakeFadeTime / 2, betterShakeFadeTime) : 0;
 
-        _fxShakeDuration = _fxShakeDuration > cool ? _fxShakeDuration - elapsed : cool;
+        _fxShakeDuration = _fxShakeDuration > fadeTime ? _fxShakeDuration - elapsed : fadeTime;
 
         viewOffset.set();
         skew.set();
         shakeAngle = 0;
 
-        if (_fxShakeDuration > cool) {
+        if (_fxShakeDuration > fadeTime) {
             var sX = _fxShakeIntensity * width;
             var sY = _fxShakeIntensity * height;
 
             var rX:Float = 0, rY:Float = 0, rAngle:Float = 0, rSkewX:Float = 0, rSkewY:Float = 0;
             if (betterShake) {
-                var w = _fxShakeDuration / -cool + 1;
+                var w = _fxShakeDuration / -fadeTime + 1;
                 var ww = FlxMath.bound(w, 0, 1) * (betterShakeHardness + 1);
                 var www = FlxMath.bound(w, 0, 1) * betterShakeHardness;
 
