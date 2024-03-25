@@ -1836,12 +1836,12 @@ class PlayState extends MusicBeatState
 			health = value;
 			return health;
 		}
-
-		// update health bar
 		health = value;
 
-		iconP1.animation.curAnim.curFrame = (healthBar.percent < 20) ? 1 : 0; //If health is under 20%, change player icon to frame 1 (losing icon), otherwise, frame 0 (normal)
-		iconP2.animation.curAnim.curFrame = (healthBar.percent > 80) ? 1 : 0; //If health is over 80%, change opponent icon to frame 1 (losing icon), otherwise, frame 0 (normal)
+		// If health is over 80%, change player icon to frame 2 (winning icon), if under 20%, change icon to frame 1 (losing icon), otherwise, frame 0 (normal)
+		iconP1.animation.curAnim.curFrame = (healthBar.percent > 80 && iconP1.hasWinning) ? 2 : (healthBar.percent < 20) ? 1 : 0;
+		// If health is under 20%, change opponent icon to frame 2 (winning icon), if over 80%, change icon to frame 1 (losing icon), otherwise, frame 0 (normal)
+		iconP2.animation.curAnim.curFrame = (healthBar.percent < 20 && iconP2.hasWinning) ? 2 : (healthBar.percent > 80) ? 1 : 0;
 		return health;
 	}
 
@@ -2075,13 +2075,19 @@ class PlayState extends MusicBeatState
 					var split:Array<String> = valuesArray[i].split(',');
 					var duration:Float = 0;
 					var intensity:Float = 0;
+					var hardness:Float = 0.5;
+					var fadeTime:Float = 0.15;
 					if(split[0] != null) duration = Std.parseFloat(split[0].trim());
 					if(split[1] != null) intensity = Std.parseFloat(split[1].trim());
+					if(split[2] != null) hardness = Std.parseFloat(split[2].trim());
+					if(split[3] != null) fadeTime = Std.parseFloat(split[3].trim());
 					if(Math.isNaN(duration)) duration = 0;
 					if(Math.isNaN(intensity)) intensity = 0;
+					if(Math.isNaN(hardness)) hardness = 0.5;
+					if(Math.isNaN(fadeTime)) fadeTime = 0.15;
 
 					if(duration > 0 && intensity != 0) {
-						targetsArray[i].shake(intensity, duration);
+						targetsArray[i].betterShake(intensity, duration, hardness, fadeTime);
 					}
 				}
 

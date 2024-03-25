@@ -6,6 +6,7 @@ class HealthIcon extends FlxSprite
 	private var isOldIcon:Bool = false;
 	private var isPlayer:Bool = false;
 	private var char:String = '';
+	public var hasWinning(default, null):Bool = false;
 
 	public function new(char:String = 'bf', isPlayer:Bool = false, ?allowGPU:Bool = true)
 	{
@@ -32,12 +33,16 @@ class HealthIcon extends FlxSprite
 			if(!Paths.fileExists('images/' + name + '.png', IMAGE)) name = 'icons/icon-face'; //Prevents crash from missing icon
 			
 			var graphic = Paths.image(name, allowGPU);
-			loadGraphic(graphic, true, Math.floor(graphic.width / 2), Math.floor(graphic.height));
-			iconOffsets[0] = (width - 150) / 2;
-			iconOffsets[1] = (height - 150) / 2;
+			var icons = graphic.width / graphic.height;
+			if (icons == 3) hasWinning = true;
+			loadGraphic(graphic, true, Math.floor(graphic.width / icons), Math.floor(graphic.height));
+			iconOffsets[0] = (width - 150) / icons;
+			iconOffsets[1] = (height - 150) / icons;
 			updateHitbox();
 
-			animation.add(char, [0, 1], 0, false, isPlayer);
+			var frames = [0, 1];
+			if (hasWinning) frames.push(2);
+			animation.add(char, frames, 0, false, isPlayer);
 			animation.play(char);
 			this.char = char;
 
