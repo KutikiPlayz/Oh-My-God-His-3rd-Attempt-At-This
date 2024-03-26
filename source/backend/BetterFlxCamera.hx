@@ -1,7 +1,5 @@
 package backend;
 
-import flixel.util.FlxAxes;
-
 class BetterFlxCamera extends flixel.FlxCamera {
     private var _matrix:Matrix = new Matrix();
 	private var _fxShakeI:Float = -999999;
@@ -76,7 +74,7 @@ class BetterFlxCamera extends flixel.FlxCamera {
         }
     }
 
-    public function betterShake(Intensity:Float = 0.05, Duration:Float = 0.5, Hardness:Float = 0.5, FadeTime:Float = 0.15, ?OnComplete:() -> Void) {
+    public overload extern inline function shake(Intensity:Float = 0.05, Duration:Float = 0.5, Hardness:Float = 0.5, FadeTime:Float = 0.15, ?OnComplete:() -> Void) {
 		if ((Intensity < _fxShakeIntensity && Duration < _fxShakeDuration))
 			return;
 

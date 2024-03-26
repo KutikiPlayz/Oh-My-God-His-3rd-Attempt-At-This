@@ -888,7 +888,7 @@ class FunkinLua {
 			return isDad;
 		});
 		Lua_helper.add_callback(lua, "cameraShake", function(camera:String, intensity:Float, duration:Float, hardness:Float = 0.5, fadeTime:Float = 0.15) {
-			LuaUtils.cameraFromString(camera).betterShake(intensity, duration, hardness, fadeTime);
+			LuaUtils.cameraFromString(camera).shake(intensity, duration, hardness, fadeTime);
 		});
 
 		Lua_helper.add_callback(lua, "cameraFlash", function(camera:String, color:String, duration:Float,forced:Bool) {

@@ -2087,7 +2087,7 @@ class PlayState extends MusicBeatState
 					if(Math.isNaN(fadeTime)) fadeTime = 0.15;
 
 					if(duration > 0 && intensity != 0) {
-						targetsArray[i].betterShake(intensity, duration, hardness, fadeTime);
+						targetsArray[i].shake(intensity, duration, hardness, fadeTime);
 					}
 				}
 
