@@ -129,9 +129,6 @@ class PlayState extends MusicBeatState
 
 	public var playbackRate(default, set):Float = 1;
 
-	public var boyfriendGroup:FlxSpriteGroup;
-	public var dadGroup:FlxSpriteGroup;
-	public var gfGroup:FlxSpriteGroup;
 	public static var curStage:String = '';
 	public static var stageUI:String = "normal";
 	public static var isPixelStage(get, never):Bool;
@@ -152,9 +149,17 @@ class PlayState extends MusicBeatState
 	public var vocals:FlxSound;
 	public var opponentVocals:FlxSound;
 
+	public var boyfriendGhostGroup:FlxSpriteGroup;
+	public var dadGhostGroup:FlxSpriteGroup;
+	public var gfGhostGroup:FlxSpriteGroup;
+	
+	public var boyfriendGroup:FlxSpriteGroup;
+	public var dadGroup:FlxSpriteGroup;
+	public var gfGroup:FlxSpriteGroup;
+
+	public var boyfriend:Character = null;
 	public var dad:Character = null;
 	public var gf:Character = null;
-	public var boyfriend:Character = null;
 
 	public var notes:FlxTypedGroup<Note>;
 	public var unspawnNotes:Array<Note> = [];
@@ -373,6 +378,10 @@ class PlayState extends MusicBeatState
 		if(girlfriendCameraOffset == null)
 			girlfriendCameraOffset = [0, 0];
 
+		boyfriendGhostGroup = new FlxSpriteGroup(BF_X, BF_Y);
+		dadGhostGroup = new FlxSpriteGroup(DAD_X, DAD_Y);
+		gfGhostGroup = new FlxSpriteGroup(GF_X, GF_Y);
+
 		boyfriendGroup = new FlxSpriteGroup(BF_X, BF_Y);
 		dadGroup = new FlxSpriteGroup(DAD_X, DAD_Y);
 		gfGroup = new FlxSpriteGroup(GF_X, GF_Y);
@@ -394,8 +403,11 @@ class PlayState extends MusicBeatState
 			introSoundsSuffix = '-pixel';
 		}
 
+		add(gfGhostGroup);
 		add(gfGroup);
+		add(dadGhostGroup);
 		add(dadGroup);
+		add(boyfriendGhostGroup);
 		add(boyfriendGroup);
 
 		#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
@@ -529,7 +541,7 @@ class PlayState extends MusicBeatState
 		moveCameraSection();
 
 		healthBar = new Bar(0, FlxG.height * (!ClientPrefs.data.downScroll ? 0.89 : 0.11), 'healthBar', function(elapsed:Float) {
-			lHealth = FlxMath.lerp(lHealth, health, elapsed * 10 / playbackRate);
+			lHealth = FlxMath.lerp(lHealth, health, elapsed * 10 * playbackRate);
 			return lHealth;
 		}, 0, 2);
 		healthBar.screenCenter(X);
@@ -1066,15 +1078,15 @@ class PlayState extends MusicBeatState
 
 	public function addBehindGF(obj:FlxBasic)
 	{
-		insert(members.indexOf(gfGroup), obj);
+		insert(members.indexOf(gfGhostGroup), obj);
 	}
 	public function addBehindBF(obj:FlxBasic)
 	{
-		insert(members.indexOf(boyfriendGroup), obj);
+		insert(members.indexOf(boyfriendGhostGroup), obj);
 	}
 	public function addBehindDad(obj:FlxBasic)
 	{
-		insert(members.indexOf(dadGroup), obj);
+		insert(members.indexOf(dadGhostGroup), obj);
 	}
 
 	public function clearNotesBefore(time:Float)
@@ -1625,6 +1637,17 @@ class PlayState extends MusicBeatState
 
 	override public function update(elapsed:Float)
 	{
+		for (ghostGroup in [boyfriendGhostGroup, dadGhostGroup, gfGhostGroup]) {
+			for (ghost in ghostGroup) {
+				ghost.alpha -= elapsed * 1.5;
+				if (ghost.alpha <= 0) {
+					ghost.kill();
+					ghost.destroy();
+					ghostGroup.remove(ghost);
+				}
+			}
+		}
+
 		if(!inCutscene && !paused && !freezeCamera) {
 			FlxG.camera.followLerp = 2.4 * cameraSpeed * playbackRate;
 			if(!startingSong && !endingSong && boyfriend.getAnimationName().startsWith('idle')) {
@@ -2880,27 +2903,7 @@ class PlayState extends MusicBeatState
 		if (songName != 'tutorial')
 			camZooming = true;
 
-		if(note.noteType == 'Hey!' && dad.animOffsets.exists('hey')) {
-			dad.playAnim('hey', true);
-			dad.specialAnim = true;
-			dad.heyTimer = 0.6;
-		} else if(!note.noAnimation) {
-			var altAnim:String = note.animSuffix;
-
-			if (SONG.notes[curSection] != null)
-				if (SONG.notes[curSection].altAnim && !SONG.notes[curSection].gfSection)
-					altAnim = '-alt';
-
-			var char:Character = dad;
-			var animToPlay:String = singAnimations[Std.int(Math.abs(Math.min(singAnimations.length-1, note.noteData)))] + altAnim;
-			if(note.gfNote) char = gf;
-
-			if(char != null)
-			{
-				char.playAnim(animToPlay, true);
-				char.holdTimer = 0;
-			}
-		}
+		playSingAnimation(note.gfNote ? gf : dad, note);
 
 		if(opponentVocals.length <= 0) vocals.volume = 1;
 		strumPlayAnim(true, Std.int(Math.abs(note.noteData)), Conductor.stepCrochet * 1.25 / 1000 / playbackRate);
@@ -2946,31 +2949,7 @@ class PlayState extends MusicBeatState
 			return;
 		}
 
-		if(!note.noAnimation) {
-			var animToPlay:String = singAnimations[Std.int(Math.abs(Math.min(singAnimations.length-1, note.noteData)))];
-
-			var char:Character = boyfriend;
-			var animCheck:String = 'hey';
-			if(note.gfNote)
-			{
-				char = gf;
-				animCheck = 'cheer';
-			}
-
-			if(char != null)
-			{
-				char.playAnim(animToPlay + note.animSuffix, true);
-				char.holdTimer = 0;
-
-				if(note.noteType == 'Hey!') {
-					if(char.animOffsets.exists(animCheck)) {
-						char.playAnim(animCheck, true);
-						char.specialAnim = true;
-						char.heyTimer = 0.6;
-					}
-				}
-			}
-		}
+		playSingAnimation(note.gfNote ? gf : boyfriend, note);
 
 		if(!cpuControlled)
 		{
@@ -2992,6 +2971,44 @@ class PlayState extends MusicBeatState
 		if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) callOnHScript('goodNoteHit', [note]);
 
 		if(!note.isSustainNote) invalidateNote(note);
+	}
+
+	function playSingAnimation(char:Character, note:Note):Void {
+		if (!note.noAnimation) {
+			var animToPlay:String = singAnimations[Std.int(Math.abs(Math.min(singAnimations.length-1, note.noteData)))];
+			var animSuffix:String = note.animSuffix;
+
+			if (SONG.notes[curSection] != null)
+				if (SONG.notes[curSection].altAnim && !SONG.notes[curSection].gfSection)
+					animSuffix = '-alt';
+	
+			char.playAnim(animToPlay + animSuffix, true);
+			char.holdTimer = 0;
+
+			if (note.hasNeighbors()) {
+				var ghost:Character = new Character(0, 0, char.curCharacter, char == boyfriend);
+				startCharacterPos(ghost);
+				ghost.playAnim(animToPlay + animSuffix, true);
+				ghost.skipDance = true;
+				ghost.holdTimer = 0;
+				ghost.alpha = 0.6;
+				ghost.color = FlxColor.fromRGB(char.healthColorArray[0], char.healthColorArray[1], char.healthColorArray[2]);
+				if (char == boyfriend) boyfriendGhostGroup.add(ghost);
+				else if (char == dad) dadGhostGroup.add(ghost);
+				else if (char == gf) gfGhostGroup.add(ghost);
+			}
+	
+			if (note.noteType == 'Hey!') {
+				var animCheck:String = 'hey';
+				if (char == gf)
+					animCheck = 'cheer';
+				if (char.animOffsets.exists(animCheck)) {
+					char.playAnim(animCheck, true);
+					char.specialAnim = true;
+					char.heyTimer = 0.6;
+				}
+			}
+		}
 	}
 
 	public function invalidateNote(note:Note):Void {

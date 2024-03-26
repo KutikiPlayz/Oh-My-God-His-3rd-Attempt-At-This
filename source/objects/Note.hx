@@ -522,6 +522,15 @@ class Note extends FlxSprite
 		}
 	}
 
+	public function hasNeighbors():Bool {
+		for (note in PlayState.instance.notes) {
+			if (note == this || note.parent == this || note.noteData == noteData || note.ignoreNote || note.mustPress != mustPress || note.gfNote != gfNote
+				|| note.distance > distance+5 || note.distance < distance-5) continue;
+			return true;
+		}
+		return false;
+	}
+
 	@:noCompletion
 	override function set_clipRect(rect:FlxRect):FlxRect
 	{

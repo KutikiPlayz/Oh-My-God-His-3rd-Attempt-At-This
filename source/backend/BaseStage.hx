@@ -91,9 +91,9 @@ class BaseStage extends FlxBasic
 	function remove(object:FlxBasic) game.remove(object);
 	function insert(position:Int, object:FlxBasic) game.insert(position, object);
 	
-	public function addBehindGF(obj:FlxBasic) insert(members.indexOf(game.gfGroup), obj);
-	public function addBehindBF(obj:FlxBasic) insert(members.indexOf(game.boyfriendGroup), obj);
-	public function addBehindDad(obj:FlxBasic) insert(members.indexOf(game.dadGroup), obj);
+	public function addBehindGF(obj:FlxBasic) insert(members.indexOf(game.gfGhostGroup), obj);
+	public function addBehindBF(obj:FlxBasic) insert(members.indexOf(game.boyfriendGhostGroup), obj);
+	public function addBehindDad(obj:FlxBasic) insert(members.indexOf(game.dadGhostGroup), obj);
 	public function setDefaultGF(name:String) //Fix for the Chart Editor on Base Game stages
 	{
 		var gfVersion:String = PlayState.SONG.gfVersion;
