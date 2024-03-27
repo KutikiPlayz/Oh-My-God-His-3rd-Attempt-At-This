@@ -45,6 +45,7 @@ class Note extends FlxSprite
 
 	public var mustPress:Bool = false;
 	public var canBeHit:Bool = false;
+	public var ghostTapping:Bool = false;
 	public var tooLate:Bool = false;
 
 	public var wasGoodHit:Bool = false;
@@ -431,6 +432,8 @@ class Note extends FlxSprite
 		{
 			canBeHit = (strumTime > Conductor.songPosition - (Conductor.safeZoneOffset * lateHitMult) &&
 						strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * earlyHitMult));
+			ghostTapping = (strumTime > Conductor.songPosition - (Conductor.safeZoneOffset * lateHitMult * 1.5) &&
+							strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * earlyHitMult * 1.5)) && !blockHit;
 
 			if (strumTime < Conductor.songPosition - Conductor.safeZoneOffset && !wasGoodHit)
 				tooLate = true;
@@ -438,6 +441,7 @@ class Note extends FlxSprite
 		else
 		{
 			canBeHit = false;
+			ghostTapping = false;
 
 			if (strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * earlyHitMult))
 			{
@@ -524,7 +528,7 @@ class Note extends FlxSprite
 
 	public function hasNeighbors():Bool {
 		for (note in PlayState.instance.notes) {
-			if (note == this || note.parent == this || note.noteData == noteData || note.ignoreNote || note.mustPress != mustPress || note.gfNote != gfNote
+			if (note == this || note.parent == this || note.noteData == noteData || note.ignoreNote || note.noAnimation || note.mustPress != mustPress || note.gfNote != gfNote
 				|| note.distance > distance+5 || note.distance < distance-5) continue;
 			return true;
 		}

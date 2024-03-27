@@ -1639,7 +1639,7 @@ class PlayState extends MusicBeatState
 	{
 		for (ghostGroup in [boyfriendGhostGroup, dadGhostGroup, gfGhostGroup]) {
 			for (ghost in ghostGroup) {
-				ghost.alpha -= elapsed * 1.5;
+				ghost.alpha -= elapsed * 1.5 * playbackRate;
 				if (ghost.alpha <= 0) {
 					ghost.kill();
 					ghost.destroy();
@@ -2646,7 +2646,9 @@ class PlayState extends MusicBeatState
 		});
 		plrInputNotes.sort(sortHitNotes);
 
-		var shouldMiss:Bool = !ClientPrefs.data.ghostTapping;
+		var ghostTappableNotes:Array<Note> = notes.members.filter(function(n:Note):Bool { return n.ghostTapping; });
+		ghostTappableNotes.sort(sortHitNotes);
+		var shouldMiss:Bool = ghostTappableNotes.length != 0;
 
 		if (plrInputNotes.length != 0) { // slightly faster than doing `> 0` lol
 			var funnyNote:Note = plrInputNotes[0]; // front note
@@ -2807,8 +2809,6 @@ class PlayState extends MusicBeatState
 
 	function noteMissPress(direction:Int = 1):Void //You pressed a key when there was no notes to press for this key
 	{
-		if(ClientPrefs.data.ghostTapping) return; //fuck it
-
 		noteMissCommon(direction);
 		FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
 		callOnScripts('noteMissPress', [direction]);

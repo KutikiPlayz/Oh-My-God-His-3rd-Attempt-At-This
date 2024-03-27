@@ -25,12 +25,6 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 			'opponentStrums',
 			'bool');
 		addOption(option);
-
-		var option:Option = new Option('Ghost Tapping',
-			"If checked, you won't get misses from pressing keys\nwhile there are no notes able to be hit.",
-			'ghostTapping',
-			'bool');
-		addOption(option);
 		
 		var option:Option = new Option('Auto Pause',
 			"If checked, the game automatically pauses if the screen isn't on focus.",

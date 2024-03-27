@@ -706,7 +706,9 @@ class EditorPlayState extends MusicBeatSubstate
 
 		plrInputNotes.sort(PlayState.sortHitNotes);
 
-		var shouldMiss:Bool = !ClientPrefs.data.ghostTapping;
+		var ghostTappableNotes:Array<Note> = notes.members.filter(function(n:Note):Bool { return n.ghostTapping; });
+		ghostTappableNotes.sort(PlayState.sortHitNotes);
+		var shouldMiss:Bool = ghostTappableNotes.length != 0;
 
 		if (plrInputNotes.length != 0) { // slightly faster than doing `> 0` lol
 			var funnyNote:Note = plrInputNotes[0]; // front note
