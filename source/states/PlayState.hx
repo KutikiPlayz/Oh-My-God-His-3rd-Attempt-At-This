@@ -1861,10 +1861,8 @@ class PlayState extends MusicBeatState
 		}
 		health = value;
 
-		// If health is over 80%, change player icon to frame 2 (winning icon), if under 20%, change icon to frame 1 (losing icon), otherwise, frame 0 (normal)
-		iconP1.animation.curAnim.curFrame = (healthBar.percent > 80 && iconP1.hasWinning) ? 2 : (healthBar.percent < 20) ? 1 : 0;
-		// If health is under 20%, change opponent icon to frame 2 (winning icon), if over 80%, change icon to frame 1 (losing icon), otherwise, frame 0 (normal)
-		iconP2.animation.curAnim.curFrame = (healthBar.percent < 20 && iconP2.hasWinning) ? 2 : (healthBar.percent > 80) ? 1 : 0;
+		iconP1.playAnim((healthBar.percent > 80) ? WINNING : (healthBar.percent < 20) ? LOSING : NEUTRAL);
+		iconP2.playAnim((healthBar.percent < 20) ? WINNING : (healthBar.percent > 80) ? LOSING : NEUTRAL);
 		return health;
 	}
 
