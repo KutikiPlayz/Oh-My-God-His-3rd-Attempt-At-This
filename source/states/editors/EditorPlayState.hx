@@ -679,6 +679,151 @@ class EditorPlayState extends MusicBeatSubstate
 		});
 	}
 
+	private function popUpMiss():Void {
+		var placement:String = Std.string(combo);
+
+		var coolText:FlxText = new FlxText(0, 0, 0, placement, 32);
+		coolText.screenCenter();
+		coolText.x = FlxG.width * 0.35;
+
+		var rating:FlxSprite = new FlxSprite();
+
+		songMisses++;
+		totalPlayed++;
+		RecalculateRating(true);
+		vocals.volume = 0;
+		var lastCombo:Int = combo;
+		combo = 0;
+
+		var pixelShitPart1:String = "";
+		var pixelShitPart2:String = '';
+
+		var graphic = Paths.image(pixelShitPart1 + 'judgements' + pixelShitPart2);
+		rating.loadGraphic(graphic, true, Math.floor(graphic.width / 2), Math.floor(graphic.height / 5));
+		rating.animation.add('rating', [8], 0, false);
+		rating.animation.play('rating');
+		rating.screenCenter();
+		rating.x = coolText.x - 40;
+		rating.y -= 60;
+		rating.acceleration.y = 550 * playbackRate * playbackRate;
+		rating.velocity.y -= FlxG.random.int(140, 175) * playbackRate;
+		rating.velocity.x -= FlxG.random.int(0, 10) * playbackRate;
+		rating.visible = (!ClientPrefs.data.hideHud && showRating);
+		rating.x += ClientPrefs.data.comboOffset[0];
+		rating.y -= ClientPrefs.data.comboOffset[1];
+
+		insert(members.indexOf(strumLineNotes), rating);
+		
+		if (!ClientPrefs.data.comboStacking)
+		{
+			if (lastRating != null) lastRating.kill();
+			lastRating = rating;
+		}
+
+		rating.setGraphicSize(Std.int(rating.width * 0.7));
+		rating.updateHitbox();
+
+		var seperatedScore:Array<Int> = [];
+
+		if(lastCombo >= 1000)
+			seperatedScore.push(Math.floor(lastCombo / 1000) % 10);
+		seperatedScore.push(Math.floor(lastCombo / 100) % 10);
+		seperatedScore.push(Math.floor(lastCombo / 10) % 10);
+		seperatedScore.push(lastCombo % 10);
+
+		var daLoop:Int = 0;
+		var xThing:Float = 0;
+		if (lastScore != null)
+		{
+			while (lastScore.length > 0)
+			{
+				lastScore[0].kill();
+				lastScore.remove(lastScore[0]);
+			}
+		}
+
+		var graphic = Paths.image(pixelShitPart1 + 'numbers' + pixelShitPart2);
+		var negative:FlxSprite = new FlxSprite().loadGraphic(graphic, true, Math.floor(graphic.width / 11), Math.floor(graphic.height / 2));
+		negative.animation.add('negative', [0, 11], 0, false);
+		negative.animation.play('negative');
+		negative.animation.curAnim.curFrame = (ratingPercent == 1) ? 11 : 0;
+		negative.screenCenter();
+		negative.x = coolText.x + (43 * daLoop) - 90 + ClientPrefs.data.comboOffset[2];
+		negative.y += 80 - ClientPrefs.data.comboOffset[3];
+		
+		if (!ClientPrefs.data.comboStacking)
+			lastScore.push(negative);
+
+		negative.setGraphicSize(Std.int(negative.width * 0.5));
+		negative.updateHitbox();
+
+		negative.acceleration.y = FlxG.random.int(200, 300) * playbackRate * playbackRate;
+		negative.velocity.y -= FlxG.random.int(140, 160) * playbackRate;
+		negative.velocity.x = FlxG.random.float(-5, 5) * playbackRate;
+		negative.visible = !ClientPrefs.data.hideHud;
+
+		if(showComboNum)
+			insert(members.indexOf(strumLineNotes), negative);
+
+		FlxTween.tween(negative, {alpha: 0}, 0.2 / playbackRate, {
+			onComplete: function(tween:FlxTween)
+			{
+				negative.destroy();
+			},
+			startDelay: Conductor.crochet * 0.002 / playbackRate
+		});
+
+		daLoop++;
+		if(negative.x > xThing) xThing = negative.x;
+		for (i in seperatedScore)
+		{
+			var graphic = Paths.image(pixelShitPart1 + 'numbers' + pixelShitPart2);
+			var numScore:FlxSprite = new FlxSprite().loadGraphic(graphic, true, Math.floor(graphic.width / 11), Math.floor(graphic.height / 2));
+			numScore.animation.add('numScore', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], 0, false);
+			numScore.animation.play('numScore');
+			numScore.animation.curAnim.curFrame = i + (ratingPercent == 1 ? 12 : 1);
+			numScore.screenCenter();
+			numScore.x = coolText.x + (43 * daLoop) - 90 + ClientPrefs.data.comboOffset[2];
+			numScore.y += 80 - ClientPrefs.data.comboOffset[3];
+			
+			if (!ClientPrefs.data.comboStacking)
+				lastScore.push(numScore);
+
+			numScore.setGraphicSize(Std.int(numScore.width * 0.5));
+			numScore.updateHitbox();
+
+			numScore.acceleration.y = FlxG.random.int(200, 300) * playbackRate * playbackRate;
+			numScore.velocity.y -= FlxG.random.int(140, 160) * playbackRate;
+			numScore.velocity.x = FlxG.random.float(-5, 5) * playbackRate;
+			numScore.visible = !ClientPrefs.data.hideHud;
+
+			if(showComboNum)
+				insert(members.indexOf(strumLineNotes), numScore);
+
+			FlxTween.tween(numScore, {alpha: 0}, 0.2 / playbackRate, {
+				onComplete: function(tween:FlxTween)
+				{
+					numScore.destroy();
+				},
+				startDelay: Conductor.crochet * 0.002 / playbackRate
+			});
+
+			daLoop++;
+			if(numScore.x > xThing) xThing = numScore.x;
+		}
+		coolText.text = Std.string(seperatedScore);
+
+		FlxTween.tween(rating, {alpha: 0}, 0.2 / playbackRate, {
+			startDelay: Conductor.crochet * 0.001 / playbackRate,
+			onComplete: function(tween:FlxTween)
+			{
+				coolText.destroy();
+
+				rating.destroy();
+			}
+		});
+	}
+
 	private function onKeyPress(event:KeyboardEvent):Void
 	{
 		var eventKey:FlxKey = event.keyCode;
@@ -906,12 +1051,7 @@ class EditorPlayState extends MusicBeatSubstate
 			}
 		}
 
-		// score and data
-		songMisses++;
-		totalPlayed++;
-		RecalculateRating(true);
-		vocals.volume = 0;
-		combo = 0;
+		popUpMiss();
 	}
 
 	public function invalidateNote(note:Note):Void {
