@@ -2453,10 +2453,8 @@ class PlayState extends MusicBeatState
 			if (PlayState.isPixelStage) uiSuffix = '-pixel';
 		}
 
-		for (rating in ratingsData)
-			Paths.image(uiPrefix + rating.image + uiSuffix);
-		for (i in 0...10)
-			Paths.image(uiPrefix + 'num' + i + uiSuffix);
+		Paths.image(uiPrefix + 'judgements' + uiSuffix);
+		Paths.image(uiPrefix + 'numbers' + uiSuffix);
 	}
 
 	private function popUpScore(note:Note = null):Void
@@ -2508,7 +2506,11 @@ class PlayState extends MusicBeatState
 			antialias = !isPixelStage;
 		}
 
-		rating.loadGraphic(Paths.image(uiPrefix + daRating.image + uiSuffix));
+		var graphic = Paths.image(uiPrefix + 'judgements' + uiSuffix);
+		rating.loadGraphic(graphic, true, Math.floor(graphic.width / 2), Math.floor(graphic.height / 5));
+		rating.animation.add('rating', [0, 1, 2, 3, 4, 5, 6, 7], 0, false);
+		rating.animation.play('rating');
+		rating.animation.curAnim.curFrame = (daRating.frame == 0) ? (ratingPercent == 1) ? 0 : 1 : daRating.frame + (noteDiff < 0 ? 0 : 1);
 		rating.screenCenter();
 		rating.x = placement - 40;
 		rating.y -= 60;
@@ -2563,7 +2565,11 @@ class PlayState extends MusicBeatState
 
 		for (i in seperatedScore)
 		{
-			var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(uiPrefix + 'num' + Std.int(i) + uiSuffix));
+			var graphic = Paths.image(uiPrefix + 'numbers' + uiSuffix);
+			var numScore:FlxSprite = new FlxSprite().loadGraphic(graphic, true, Math.floor(graphic.width / 11), Math.floor(graphic.height / 2));
+			numScore.animation.add('numScore', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], 0, false);
+			numScore.animation.play('numScore');
+			numScore.animation.curAnim.curFrame = i + (ratingPercent == 1 ? 12 : 1);
 			numScore.screenCenter();
 			numScore.x = placement + (43 * daLoop) - 90 + ClientPrefs.data.comboOffset[2];
 			numScore.y += 80 - ClientPrefs.data.comboOffset[3];
@@ -2605,6 +2611,145 @@ class PlayState extends MusicBeatState
 				rating.destroy();
 			},
 			startDelay: Conductor.crochet * 0.002 / playbackRate
+		});
+	}
+
+	private function popUpMiss():Void {
+		vocals.volume = 0;
+
+		if (!ClientPrefs.data.comboStacking && comboGroup.members.length > 0) {
+			for (spr in comboGroup) {
+				spr.destroy();
+				comboGroup.remove(spr);
+			}
+		}
+
+		var placement:Float = FlxG.width * 0.35;
+		var rating:FlxSprite = new FlxSprite();
+		var lastCombo:Int = combo;
+		combo = 0;
+
+		if(!practiceMode) songScore -= 10;
+		if(!endingSong) songMisses++;
+		totalPlayed++;
+		RecalculateRating(true);
+
+		var uiPrefix:String = "";
+		var uiSuffix:String = '';
+		var antialias:Bool = ClientPrefs.data.antialiasing;
+
+		if (stageUI != "normal")
+		{
+			uiPrefix = '${stageUI}UI/';
+			if (PlayState.isPixelStage) uiSuffix = '-pixel';
+			antialias = !isPixelStage;
+		}
+
+		var graphic = Paths.image(uiPrefix + 'judgements' + uiSuffix);
+		rating.loadGraphic(graphic, true, Math.floor(graphic.width / 2), Math.floor(graphic.height / 5));
+		rating.animation.add('rating', [8], 0, false);
+		rating.animation.play('rating');
+		rating.screenCenter();
+		rating.x = placement - 40;
+		rating.y -= 60;
+		rating.acceleration.y = 550 * playbackRate * playbackRate;
+		rating.velocity.y -= FlxG.random.int(140, 175) * playbackRate;
+		rating.velocity.x -= FlxG.random.int(0, 10) * playbackRate;
+		rating.visible = (!ClientPrefs.data.hideHud && showRating);
+		rating.x += ClientPrefs.data.comboOffset[0];
+		rating.y -= ClientPrefs.data.comboOffset[1];
+		rating.antialiasing = antialias;
+		comboGroup.add(rating);
+
+		if (!PlayState.isPixelStage)
+			rating.setGraphicSize(Std.int(rating.width * 0.7));
+		else
+			rating.setGraphicSize(Std.int(rating.width * daPixelZoom * 0.85));
+
+		rating.updateHitbox();
+
+		var seperatedScore:Array<Int> = [];
+
+		if(lastCombo >= 1000)
+			seperatedScore.push(Math.floor(lastCombo / 1000) % 10);
+		seperatedScore.push(Math.floor(lastCombo / 100) % 10);
+		seperatedScore.push(Math.floor(lastCombo / 10) % 10);
+		seperatedScore.push(lastCombo % 10);
+
+		var daLoop:Int = 0;
+		var xThing:Float = 0;
+
+		var graphic = Paths.image(uiPrefix + 'numbers' + uiSuffix);
+		var negative:FlxSprite = new FlxSprite().loadGraphic(graphic, true, Math.floor(graphic.width / 11), Math.floor(graphic.height / 2));
+		negative.animation.add('negative', [0, 11], 0, false);
+		negative.animation.play('negative');
+		negative.animation.curAnim.curFrame = (ratingPercent == 1) ? 11 : 0;
+		negative.screenCenter();
+		negative.x = placement + (43 * daLoop) - 90 + ClientPrefs.data.comboOffset[2];
+		negative.y += 80 - ClientPrefs.data.comboOffset[3];
+
+		if (!PlayState.isPixelStage) negative.setGraphicSize(Std.int(negative.width * 0.5));
+		else negative.setGraphicSize(Std.int(negative.width * daPixelZoom));
+		negative.updateHitbox();
+
+		negative.acceleration.y = FlxG.random.int(200, 300) * playbackRate * playbackRate;
+		negative.velocity.y -= FlxG.random.int(140, 160) * playbackRate;
+		negative.velocity.x = FlxG.random.float(-5, 5) * playbackRate;
+		negative.visible = !ClientPrefs.data.hideHud;
+		negative.antialiasing = antialias;
+
+		if(showComboNum)
+			comboGroup.add(negative);
+
+		FlxTween.tween(negative, {alpha: 0}, 0.2 / playbackRate, {
+			startDelay: Conductor.crochet * 0.002 / playbackRate,
+			onComplete: function(tween:FlxTween) {
+				negative.destroy();
+			}
+		});
+
+		daLoop++;
+		if(negative.x > xThing) xThing = negative.x;
+		for (i in seperatedScore)
+		{
+			var graphic = Paths.image(uiPrefix + 'numbers' + uiSuffix);
+			var numScore:FlxSprite = new FlxSprite().loadGraphic(graphic, true, Math.floor(graphic.width / 11), Math.floor(graphic.height / 2));
+			numScore.animation.add('numScore', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], 0, false);
+			numScore.animation.play('numScore');
+			numScore.animation.curAnim.curFrame = i + (ratingPercent == 1 ? 12 : 1);
+			numScore.screenCenter();
+			numScore.x = placement + (43 * daLoop) - 90 + ClientPrefs.data.comboOffset[2];
+			numScore.y += 80 - ClientPrefs.data.comboOffset[3];
+
+			if (!PlayState.isPixelStage) numScore.setGraphicSize(Std.int(numScore.width * 0.5));
+			else numScore.setGraphicSize(Std.int(numScore.width * daPixelZoom));
+			numScore.updateHitbox();
+
+			numScore.acceleration.y = FlxG.random.int(200, 300) * playbackRate * playbackRate;
+			numScore.velocity.y -= FlxG.random.int(140, 160) * playbackRate;
+			numScore.velocity.x = FlxG.random.float(-5, 5) * playbackRate;
+			numScore.visible = !ClientPrefs.data.hideHud;
+			numScore.antialiasing = antialias;
+
+			if(showComboNum)
+				comboGroup.add(numScore);
+
+			FlxTween.tween(numScore, {alpha: 0}, 0.2 / playbackRate, {
+				onComplete: function(tween:FlxTween)
+				{
+					numScore.destroy();
+				},
+				startDelay: Conductor.crochet * 0.002 / playbackRate
+			});
+
+			daLoop++;
+			if(numScore.x > xThing) xThing = numScore.x;
+		}
+		FlxTween.tween(rating, {alpha: 0}, 0.2 / playbackRate, {
+			startDelay: Conductor.crochet * 0.001 / playbackRate,
+			onComplete: function(tween:FlxTween) {
+				rating.destroy();
+			}
 		});
 	}
 
@@ -2863,14 +3008,7 @@ class PlayState extends MusicBeatState
 			doDeathCheck(true);
 		}
 
-		var lastCombo:Int = combo;
-		combo = 0;
-
 		health -= subtract * healthLoss;
-		if(!practiceMode) songScore -= 10;
-		if(!endingSong) songMisses++;
-		totalPlayed++;
-		RecalculateRating(true);
 
 		// play character anims
 		var char:Character = boyfriend;
@@ -2884,13 +3022,13 @@ class PlayState extends MusicBeatState
 			var animToPlay:String = singAnimations[Std.int(Math.abs(Math.min(singAnimations.length-1, direction)))] + 'miss' + suffix;
 			char.playAnim(animToPlay, true);
 
-			if(char != gf && lastCombo > 5 && gf != null && gf.animOffsets.exists('sad'))
+			if(char != gf && combo > 5 && gf != null && gf.animOffsets.exists('sad'))
 			{
 				gf.playAnim('sad');
 				gf.specialAnim = true;
 			}
 		}
-		vocals.volume = 0;
+		popUpMiss();
 	}
 
 	function opponentNoteHit(note:Note):Void

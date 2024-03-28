@@ -509,11 +509,8 @@ class EditorPlayState extends MusicBeatSubstate
 
 	private function cachePopUpScore()
 	{
-		for (rating in ratingsData)
-			Paths.image(rating.image);
-		
-		for (i in 0...10)
-			Paths.image('num' + i);
+		Paths.image('judgements');
+		Paths.image('numbers');
 	}
 
 	private function popUpScore(note:Note = null):Void
@@ -553,7 +550,11 @@ class EditorPlayState extends MusicBeatSubstate
 		var pixelShitPart1:String = "";
 		var pixelShitPart2:String = '';
 
-		rating.loadGraphic(Paths.image(pixelShitPart1 + daRating.image + pixelShitPart2));
+		var graphic = Paths.image(pixelShitPart1 + 'judgements' + pixelShitPart2);
+		rating.loadGraphic(graphic, true, Math.floor(graphic.width / 2), Math.floor(graphic.height / 5));
+		rating.animation.add('rating', [0, 1, 2, 3, 4, 5, 6, 7], 0, false);
+		rating.animation.play('rating');
+		rating.animation.curAnim.curFrame = (daRating.frame == 0) ? (ratingPercent == 1) ? 0 : 1 : daRating.frame + (noteDiff < 0 ? 0 : 1);
 		rating.screenCenter();
 		rating.x = coolText.x - 40;
 		rating.y -= 60;
@@ -618,7 +619,11 @@ class EditorPlayState extends MusicBeatSubstate
 		}
 		for (i in seperatedScore)
 		{
-			var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(pixelShitPart1 + 'num' + Std.int(i) + pixelShitPart2));
+			var graphic = Paths.image(pixelShitPart1 + 'numbers' + pixelShitPart2);
+			var numScore:FlxSprite = new FlxSprite().loadGraphic(graphic, true, Math.floor(graphic.width / 11), Math.floor(graphic.height / 2));
+			numScore.animation.add('numScore', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], 0, false);
+			numScore.animation.play('numScore');
+			numScore.animation.curAnim.curFrame = i + (ratingPercent == 1 ? 12 : 1);
 			numScore.screenCenter();
 			numScore.x = coolText.x + (43 * daLoop) - 90 + ClientPrefs.data.comboOffset[2];
 			numScore.y += 80 - ClientPrefs.data.comboOffset[3];
