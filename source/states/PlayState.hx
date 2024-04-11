@@ -2108,7 +2108,7 @@ class PlayState extends MusicBeatState
 					if(Math.isNaN(fadeTime)) fadeTime = 0.15;
 
 					if(duration > 0 && intensity != 0) {
-						targetsArray[i].shake(intensity, duration, hardness, fadeTime);
+						targetsArray[i].shake(intensity, duration / playbackRate, hardness * playbackRate, fadeTime / playbackRate);
 					}
 				}
 
@@ -3101,7 +3101,7 @@ class PlayState extends MusicBeatState
 			if(combo > 9999) combo = 9999;
 			popUpScore(note);
 		}
-		if (!note.isSustainNote) health += note.hitHealth * healthGain * (note.ratingMod * 1.5);
+		if (!note.isSustainNote) health += note.hitHealth * healthGain * (note.healthMod ? note.ratingMod * 1.5 : 1);
 
 		var result:Dynamic = callOnLuas('goodNoteHit', [notes.members.indexOf(note), leData, leType, isSus]);
 		if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) callOnHScript('goodNoteHit', [note]);
