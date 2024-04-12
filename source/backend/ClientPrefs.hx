@@ -12,7 +12,7 @@ import states.TitleState;
 	public var downScroll:Bool = false;
 	public var middleScroll:Bool = false;
 	public var opponentStrums:Bool = true;
-	public var showFPS:Bool = true;
+	public var showFPS:String = 'Hidden';
 	public var flashing:Bool = true;
 	public var autoPause:Bool = true;
 	public var antialiasing:Bool = true;
@@ -22,7 +22,7 @@ import states.TitleState;
 	public var lowQuality:Bool = false;
 	public var shaders:Bool = true;
 	public var cacheOnGPU:Bool = #if !switch false #else true #end; //From Stilic
-	public var windowMode:String = "Windowed";
+	public var windowMode:String = 'Windowed';
 	public var framerate:Int = 60;
 	public var framerateOption:Int = 0;
 	public var camZooms:Bool = true;
@@ -176,8 +176,10 @@ class ClientPrefs {
 			if (key != 'gameplaySettings' && Reflect.hasField(FlxG.save.data, key))
 				Reflect.setField(data, key, Reflect.field(FlxG.save.data, key));
 		
-		if(Main.fpsVar != null)
-			Main.fpsVar.visible = data.showFPS;
+		if(Main.fpsVar != null) {
+			Main.fpsVar.visible = data.showFPS != 'Hidden';
+			Main.fpsVar.showMemory = data.showFPS == 'Extended';
+		}
 
 		#if (!html5 && !switch)
 		FlxG.autoPause = ClientPrefs.data.autoPause;

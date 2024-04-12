@@ -1938,6 +1938,8 @@ class PlayState extends MusicBeatState
 				opponentVocals.stop();
 				FlxG.sound.music.stop();
 
+				FlxG.camera.flash(FlxColor.RED, 0.3);
+
 				persistentUpdate = false;
 				persistentDraw = false;
 				FlxTimer.globalManager.clear();

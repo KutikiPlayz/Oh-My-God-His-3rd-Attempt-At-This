@@ -114,10 +114,11 @@ class VisualsUISubState extends BaseOptionsMenu
 		addOption(option);
 		
 		#if !mobile
-		var option:Option = new Option('FPS Counter',
-			'If unchecked, hides FPS Counter.',
+		var option:Option = new Option('FPS Counter:',
+			'Basic shows just fps, Extended shows memory.',
 			'showFPS',
-			'bool');
+			'string',
+			['Hidden', 'Basic', 'Extended']);
 		addOption(option);
 		option.onChange = onChangeFPSCounter;
 		#end
@@ -213,8 +214,10 @@ class VisualsUISubState extends BaseOptionsMenu
 	#if !mobile
 	function onChangeFPSCounter()
 	{
-		if(Main.fpsVar != null)
-			Main.fpsVar.visible = ClientPrefs.data.showFPS;
+		if(Main.fpsVar != null) {
+			Main.fpsVar.visible = ClientPrefs.data.showFPS != 'Hidden';
+			Main.fpsVar.showMemory = ClientPrefs.data.showFPS == 'Extended';
+		}
 	}
 	#end
 }
