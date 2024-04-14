@@ -1147,6 +1147,7 @@ class ChartingState extends MusicBeatState
 	var instVolume:FlxUINumericStepper;
 	var voicesVolume:FlxUINumericStepper;
 	var voicesOppVolume:FlxUINumericStepper;
+	var hitSoundVolume:FlxUINumericStepper;
 	function addChartingUI() {
 		var tab_group_chart = new FlxUI(null, UI_box);
 		tab_group_chart.name = 'Charting';
@@ -1310,6 +1311,11 @@ class ChartingState extends MusicBeatState
 		voicesOppVolume.value = vocals.volume;
 		voicesOppVolume.name = 'voices_opp_volume';
 		blockPressWhileTypingOnStepper.push(voicesOppVolume);
+
+		hitSoundVolume = new FlxUINumericStepper(voicesOppVolume.x, check_mute_inst.y, 0.1, 1, 0, 1, 1);
+		hitSoundVolume.value = 0.5;
+		hitSoundVolume.name = 'hitsound_volume';
+		blockPressWhileTypingOnStepper.push(hitSoundVolume);
 		
 		#if FLX_PITCH
 		sliderRate = new FlxUISlider(this, 'playbackSpeed', 120, 120, 0.5, 3, 150, null, 5, FlxColor.WHITE, FlxColor.BLACK);
@@ -1322,6 +1328,7 @@ class ChartingState extends MusicBeatState
 		tab_group_chart.add(new FlxText(instVolume.x, instVolume.y - 15, 0, 'Inst Volume'));
 		tab_group_chart.add(new FlxText(voicesVolume.x, voicesVolume.y - 15, 0, 'Main Vocals'));
 		tab_group_chart.add(new FlxText(voicesOppVolume.x, voicesOppVolume.y - 15, 0, 'Opp. Vocals'));
+		tab_group_chart.add(new FlxText(hitSoundVolume.x, hitSoundVolume.y - 15, 0, 'Hitsounds'));
 		tab_group_chart.add(metronome);
 		tab_group_chart.add(disableAutoScrolling);
 		tab_group_chart.add(metronomeStepper);
@@ -1334,6 +1341,7 @@ class ChartingState extends MusicBeatState
 		tab_group_chart.add(instVolume);
 		tab_group_chart.add(voicesVolume);
 		tab_group_chart.add(voicesOppVolume);
+		tab_group_chart.add(hitSoundVolume);
 		tab_group_chart.add(check_mute_inst);
 		tab_group_chart.add(check_mute_vocals);
 		tab_group_chart.add(check_mute_vocals_opponent);
@@ -2186,7 +2194,7 @@ class ChartingState extends MusicBeatState
 							if(_song.player1 == 'gf') //Easter egg
 								soundToPlay = 'GF_' + Std.string(data + 1);
 
-							FlxG.sound.play(Paths.sound(soundToPlay)).pan = note.noteData < 4? -0.3 : 0.3; //would be coolio
+							FlxG.sound.play(Paths.sound(soundToPlay), hitSoundVolume.value).pan = note.noteData < 4? -0.3 : 0.3; //would be coolio
 							playedSound[data] = true;
 						}
 
