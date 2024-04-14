@@ -3121,8 +3121,18 @@ class PlayState extends MusicBeatState
 				if (SONG.notes[curSection].altAnim && !SONG.notes[curSection].gfSection)
 					animSuffix = '-alt';
 	
-			char.playAnim(animToPlay + animSuffix, true);
-			char.holdTimer = 0;
+			char.skipDance = false;
+			if (note.isSustainNote) {
+				if (!note.animation.curAnim.name.contains('holdend')) char.skipDance = true;
+				else {
+					var singDuration = Conductor.stepCrochet * (0.0011 #if FLX_PITCH / (FlxG.sound.music != null ? FlxG.sound.music.pitch : 1) #end) * char.singDuration;
+					if (char.holdTimer >= singDuration / 2) char.holdTimer = singDuration / 2;
+				}
+			}
+			if (!note.isSustainNote || char.animation.curAnim.name != animToPlay + animSuffix) {
+				char.playAnim(animToPlay + animSuffix, true);
+				char.holdTimer = 0;
+			}
 
 			if (note.hasNeighbors()) {
 				var ghost:Character = new Character(0, 0, char.curCharacter, char == boyfriend);
