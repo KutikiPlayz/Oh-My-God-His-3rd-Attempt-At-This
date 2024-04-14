@@ -129,6 +129,9 @@ class Note extends FlxSprite
 
 	public var healthMod:Bool = true;
 
+	public var beatRow:Float = 0;
+	public var quantColor:Int = 0;
+
 	private function set_multSpeed(value:Float):Float {
 		resizeByRatio(value / multSpeed);
 		multSpeed = value;
@@ -154,8 +157,9 @@ class Note extends FlxSprite
 
 	public function defaultRGB()
 	{
-		var arr:Array<FlxColor> = ClientPrefs.data.arrowRGB[noteData];
-		if(PlayState.isPixelStage) arr = ClientPrefs.data.arrowRGBPixel[noteData];
+		var colorID = ClientPrefs.data.quantizeNoteColors ? quantColor : noteData;
+		var arr:Array<FlxColor> = ClientPrefs.data.arrowRGB[colorID];
+		if (PlayState.isPixelStage) arr = ClientPrefs.data.arrowRGBPixel[colorID];
 
 		if (noteData > -1 && noteData <= arr.length)
 		{
@@ -224,6 +228,17 @@ class Note extends FlxSprite
 		isSustainNote = sustainNote;
 		this.inEditor = inEditor;
 		this.moves = false;
+		this.beatRow = !isSustainNote ? (strumTime / 1000) * (PlayState.SONG.bpm / 60) : prevNote.beatRow;
+		var quant = Math.round(this.beatRow * 48);
+		if (quant % (192 / 4) == 0)
+			quantColor = 0;
+		else if (quant % (192 / 8) == 0)
+			quantColor = 1;
+		else if (quant % (192 / 12) == 0)
+			quantColor = 2;
+		else if (quant % (192 / 16) == 0)
+			quantColor = 3;
+		else quantColor = 2;
 
 		x += (ClientPrefs.data.middleScroll ? PlayState.STRUM_X_MIDDLESCROLL : PlayState.STRUM_X) + 50;
 		// MAKE SURE ITS DEFINITELY OFF SCREEN?
@@ -237,7 +252,7 @@ class Note extends FlxSprite
 			texture = '';
 			rgbShader = new RGBShaderReference(this, initializeGlobalRGBShader(noteData));
 			if(PlayState.SONG != null && PlayState.SONG.disableNoteRGB) rgbShader.enabled = false;
-
+	
 			x += swagWidth * (noteData);
 			if(!isSustainNote && noteData < colArray.length) { //Doing this 'if' check to fix the warnings on Senpai songs
 				var animToPlay:String = '';

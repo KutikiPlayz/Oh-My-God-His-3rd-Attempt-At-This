@@ -24,6 +24,18 @@ class StrumNote extends FlxSprite
 		return value;
 	}
 
+	public function defaultRGB() {
+		var arr:Array<FlxColor> = ClientPrefs.data.arrowRGB[noteData];
+		if(PlayState.isPixelStage) arr = ClientPrefs.data.arrowRGBPixel[noteData];
+		if(ClientPrefs.data.quantizeNoteColors) arr = [0xFF87A3AD, 0xFFFFFFFF, 0xFF000000];
+
+		if (noteData <= arr.length) {
+			rgbShader.r = arr[0];
+			rgbShader.g = arr[1];
+			rgbShader.b = arr[2];
+		}
+	}
+
 	public var useRGBShader:Bool = true;
 	public function new(x:Float, y:Float, leData:Int, player:Int) {
 		animation = new PsychAnimationController(this);
@@ -159,6 +171,7 @@ class StrumNote extends FlxSprite
 	}
 
 	public function playAnim(anim:String, ?force:Bool = false) {
+		defaultRGB();
 		animation.play(anim, force);
 		if(animation.curAnim != null)
 		{
@@ -166,5 +179,11 @@ class StrumNote extends FlxSprite
 			centerOrigin();
 		}
 		if(useRGBShader) rgbShader.enabled = (animation.curAnim != null && animation.curAnim.name != 'static');
+	}
+
+	public function copyNoteColor(note:Note) {
+		rgbShader.r = note.rgbShader.r;
+		rgbShader.g = note.rgbShader.g;
+		rgbShader.b = note.rgbShader.b;
 	}
 }

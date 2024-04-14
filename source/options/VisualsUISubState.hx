@@ -44,6 +44,12 @@ class VisualsUISubState extends BaseOptionsMenu
 			option.onChange = onChangeNoteSkin;
 			noteOptionID = optionsArray.length - 1;
 		}
+
+		var option:Option = new Option('Quantize Note Colors',
+			'Colors notes based on beat.',
+			'quantizeNoteColors',
+			'bool');
+		addOption(option);
 		
 		var noteSplashes:Array<String> = Mods.mergeAllTextsNamed('images/noteSplashes/list.txt');
 		if(noteSplashes.length > 0)

@@ -971,6 +971,7 @@ class EditorPlayState extends MusicBeatSubstate
 		if(strum != null) {
 			strum.playAnim('confirm', true);
 			strum.resetAnim = Conductor.stepCrochet * 1.25 / 1000 / playbackRate;
+			strum.copyNoteColor(note);
 		}
 		note.hitByOpponent = true;
 
@@ -1005,6 +1006,7 @@ class EditorPlayState extends MusicBeatSubstate
 
 		var spr:StrumNote = playerStrums.members[note.noteData];
 		if(spr != null) spr.playAnim('confirm', true);
+		spr.copyNoteColor(note);
 		vocals.volume = 1;
 
 		if (!note.isSustainNote)

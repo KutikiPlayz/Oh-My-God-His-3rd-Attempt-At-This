@@ -2178,6 +2178,7 @@ class ChartingState extends MusicBeatState
 					if(noteDataToCheck > -1 && note.mustPress != _song.notes[curSec].mustHitSection) noteDataToCheck += 4;
 						strumLineNotes.members[noteDataToCheck].playAnim('confirm', true);
 						strumLineNotes.members[noteDataToCheck].resetAnim = ((note.sustainLength / 1000) + 0.15) / playbackSpeed;
+						strumLineNotes.members[noteDataToCheck].copyNoteColor(note);
 					if(!playedSound[data]) {
 						if(note.hitsoundChartEditor && ((playSoundBf.checked && note.mustPress) || (playSoundDad.checked && !note.mustPress)))
 						{
