@@ -2631,10 +2631,12 @@ class PlayState extends MusicBeatState
 		var lastCombo:Int = combo;
 		combo = 0;
 
-		if(!practiceMode) songScore -= 10;
-		if(!endingSong) songMisses++;
-		totalPlayed++;
-		RecalculateRating(true);
+		if(!practiceMode && !cpuControlled) {
+			songScore -= 10;
+			if(!endingSong) songMisses++;
+			totalPlayed++;
+			RecalculateRating(true);
+		}
 
 		var uiPrefix:String = "";
 		var uiSuffix:String = '';
@@ -2700,7 +2702,7 @@ class PlayState extends MusicBeatState
 		negative.visible = !ClientPrefs.data.hideHud;
 		negative.antialiasing = antialias;
 
-		if(showComboNum)
+		if(showComboNum && lastCombo > 0)
 			comboGroup.add(negative);
 
 		FlxTween.tween(negative, {alpha: 0}, 0.2 / playbackRate, {
@@ -2733,7 +2735,7 @@ class PlayState extends MusicBeatState
 			numScore.visible = !ClientPrefs.data.hideHud;
 			numScore.antialiasing = antialias;
 
-			if(showComboNum)
+			if(showComboNum && lastCombo > 0)
 				comboGroup.add(numScore);
 
 			FlxTween.tween(numScore, {alpha: 0}, 0.2 / playbackRate, {
