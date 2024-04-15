@@ -23,12 +23,17 @@ class FreeplayState extends MusicBeatState
 	private static var lastDifficultyName:String = Difficulty.getDefault();
 
 	var scoreBG:FlxSprite;
+	var personalBestText:FlxText;
 	var scoreText:FlxText;
 	var diffText:FlxText;
-	var lerpScore:Int = 0;
+	var lerpScore:Float = 0;
+	var lerpMisses:Float = 0;
 	var lerpRating:Float = 0;
+	var lerpPlayBackRate:Float = 0;
 	var intendedScore:Int = 0;
+	var intendedMisses:Int = 0;
 	var intendedRating:Float = 0;
+	var intendedPlayBackRate:Float = 0;
 
 	private var grpSongs:FlxTypedGroup<Alphabet>;
 	private var curPlaying:Bool = false;
@@ -124,17 +129,21 @@ class FreeplayState extends MusicBeatState
 		}
 		WeekData.setDirectoryFromWeek();
 
-		scoreText = new FlxText(FlxG.width * 0.7, 5, 0, "", 32);
-		scoreText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, RIGHT);
+		personalBestText = new FlxText(FlxG.width * 0.7, 5, 0, "", 32);
+		personalBestText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE);
 
-		scoreBG = new FlxSprite(scoreText.x - 6, 0).makeGraphic(1, 66, 0xFF000000);
+		scoreText = new FlxText(FlxG.width * 0.7, 5, 0, "", 32);
+		scoreText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE);
+
+		scoreBG = new FlxSprite(scoreText.x - 6, 0).makeGraphic(1, 150, 0xFF000000);
 		scoreBG.alpha = 0.6;
 		add(scoreBG);
 
-		diffText = new FlxText(scoreText.x, scoreText.y + 36, 0, "", 24);
+		diffText = new FlxText(scoreText.x, scoreText.y + 118, 0, "", 24);
 		diffText.font = scoreText.font;
 		add(diffText);
 
+		add(personalBestText);
 		add(scoreText);
 
 
@@ -201,13 +210,10 @@ class FreeplayState extends MusicBeatState
 		{
 			FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
 		}
-		lerpScore = Math.floor(FlxMath.lerp(intendedScore, lerpScore, Math.exp(-elapsed * 24)));
-		lerpRating = FlxMath.lerp(intendedRating, lerpRating, Math.exp(-elapsed * 12));
-
-		if (Math.abs(lerpScore - intendedScore) <= 10)
-			lerpScore = intendedScore;
-		if (Math.abs(lerpRating - intendedRating) <= 0.01)
-			lerpRating = intendedRating;
+		lerpScore = FlxMath.lerp(lerpScore, intendedScore, elapsed * 24);
+		lerpMisses = FlxMath.lerp(lerpMisses, intendedMisses, elapsed * 6);
+		lerpRating = FlxMath.lerp(lerpRating, intendedRating, elapsed * 12);
+		lerpPlayBackRate = FlxMath.lerp(lerpPlayBackRate, intendedPlayBackRate, elapsed * 12);
 
 		var ratingSplit:Array<String> = Std.string(CoolUtil.floorDecimal(lerpRating * 100, 2)).split('.');
 		if(ratingSplit.length < 2) { //No decimals, add an empty space
@@ -223,7 +229,8 @@ class FreeplayState extends MusicBeatState
 
 		if (!player.playingMusic)
 		{
-			scoreText.text = 'PERSONAL BEST: ' + lerpScore + ' (' + ratingSplit.join('.') + '%)';
+			personalBestText.text = 'PERSONAL BEST';
+			scoreText.text = '\nScore: ${Math.round(lerpScore)} (x${CoolUtil.roundDecimal(lerpPlayBackRate, 2)})\nMisses: ${Math.round(lerpMisses)}\nRating: ${ratingSplit.join('.')}%';
 			positionHighscore();
 			
 			if(songs.length > 1)
@@ -431,7 +438,9 @@ class FreeplayState extends MusicBeatState
 
 		#if !switch
 		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);
+		intendedMisses = Highscore.getMisses(songs[curSelected].songName, curDifficulty);
 		intendedRating = Highscore.getRating(songs[curSelected].songName, curDifficulty);
+		intendedPlayBackRate = Highscore.getPlayBackRate(songs[curSelected].songName, curDifficulty);
 		#end
 
 		lastDifficultyName = Difficulty.getString(curDifficulty);
@@ -521,6 +530,8 @@ class FreeplayState extends MusicBeatState
 		scoreText.x = FlxG.width - scoreText.width - 6;
 		scoreBG.scale.x = FlxG.width - scoreText.x + 6;
 		scoreBG.x = FlxG.width - (scoreBG.scale.x / 2);
+		personalBestText.x = Std.int(scoreBG.x + (scoreBG.width / 2));
+		personalBestText.x -= personalBestText.width / 2;
 		diffText.x = Std.int(scoreBG.x + (scoreBG.width / 2));
 		diffText.x -= diffText.width / 2;
 	}

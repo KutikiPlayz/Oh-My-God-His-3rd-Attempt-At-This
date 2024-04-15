@@ -63,6 +63,19 @@ class CoolUtil
 		return newValue / tempMult;
 	}
 
+	public static function roundDecimal(value:Float, decimals:Int):Float
+	{
+		if(decimals < 1)
+			return Math.round(value);
+
+		var tempMult:Float = 1;
+		for (i in 0...decimals)
+			tempMult *= 10;
+
+		var newValue:Float = Math.round(value * tempMult);
+		return newValue / tempMult;
+	}
+
 	inline public static function dominantColor(sprite:flixel.FlxSprite):Int
 	{
 		var countByColor:Map<Int, Int> = [];
