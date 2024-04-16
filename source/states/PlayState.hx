@@ -1642,7 +1642,6 @@ class PlayState extends MusicBeatState
 				ghost.alpha -= elapsed * 1.5 * playbackRate;
 				if (ghost.alpha <= 0) {
 					ghost.kill();
-					ghost.destroy();
 					ghostGroup.remove(ghost);
 				}
 			}
@@ -3131,22 +3130,24 @@ class PlayState extends MusicBeatState
 					if (char.holdTimer >= singDuration / 2) char.holdTimer = singDuration / 2;
 				}
 			}
-			if (!note.isSustainNote || char.animation.curAnim.name != animToPlay + animSuffix) {
+			if (!note.isSustainNote || (char.getAnimationName() != '$animToPlay$animSuffix' && char.getAnimationName() != '$animToPlay$animSuffix-loop')) {
 				char.playAnim(animToPlay + animSuffix, true);
 				char.holdTimer = 0;
 			}
 
 			if (note.hasNeighbors()) {
-				var ghost:Character = new Character(0, 0, char.curCharacter, char == boyfriend);
+				var ghostGroup = boyfriendGhostGroup;
+				if (char == dad) ghostGroup = dadGhostGroup;
+				else if (char == gf) ghostGroup = gfGhostGroup;
+
+				var ghost:Character = cast ghostGroup.recycle(Character, function() { return new Character(0, 0, char.curCharacter, char == boyfriend); });
 				startCharacterPos(ghost);
 				ghost.playAnim(animToPlay + animSuffix, true);
 				ghost.skipDance = true;
 				ghost.holdTimer = 0;
 				ghost.alpha = 0.6;
 				ghost.color = FlxColor.fromRGB(char.healthColorArray[0], char.healthColorArray[1], char.healthColorArray[2]);
-				if (char == boyfriend) boyfriendGhostGroup.add(ghost);
-				else if (char == dad) dadGhostGroup.add(ghost);
-				else if (char == gf) gfGhostGroup.add(ghost);
+				ghostGroup.add(ghost);
 			}
 	
 			if (note.noteType == 'Hey!') {
