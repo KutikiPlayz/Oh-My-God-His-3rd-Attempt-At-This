@@ -83,9 +83,9 @@ class Song
 		for (i in 0...songJson.notes.length) { // Convert mustHitSections and gfSections to a camera event
 			var prevSection = songJson.notes[i-1];
 			var section = songJson.notes[i];
-			if (section.mustHitSection != null && section.gfSection != null) {
+			if (section.mustHitSection != null) {
 				var gfSectionChanged = prevSection != null && section.gfSection != prevSection.gfSection;
-				var mustHitSectionChanged = prevSection != null && !section.gfSection && section.mustHitSection != prevSection.mustHitSection;
+				var mustHitSectionChanged = prevSection != null && (!section.gfSection || section.gfSection == null) && section.mustHitSection != prevSection.mustHitSection;
 				if (prevSection == null || gfSectionChanged || mustHitSectionChanged) {
 					var addedToExisting = false;
 					for (j in 0...songJson.events.length) {
@@ -102,7 +102,7 @@ class Song
 						section.sectionNotes[j][1] = (section.sectionNotes[j][1] + 4) % 8;
 				}
 
-				if (section.gfSection) {
+				if (section.gfSection != null && section.gfSection) {
 					var notes = cast(section.sectionNotes, Array<Dynamic>);
 					for (j in 0...notes.length) {
 						if (section.mustHitSection)
