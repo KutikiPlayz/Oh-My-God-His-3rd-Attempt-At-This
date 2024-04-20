@@ -357,12 +357,7 @@ class EditorPlayState extends MusicBeatSubstate
 				if(daStrumTime < startPos) continue;
 
 				var daNoteData:Int = Std.int(songNotes[1] % 4);
-				var gottaHitNote:Bool = section.mustHitSection;
-
-				if (songNotes[1] > 3)
-				{
-					gottaHitNote = !section.mustHitSection;
-				}
+				var gottaHitNote:Bool = songNotes[1] > 3;
 
 				var oldNote:Note;
 				if (unspawnNotes.length > 0)

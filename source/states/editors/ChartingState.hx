@@ -46,10 +46,8 @@ import flash.media.Sound;
 @:access(flixel.sound.FlxSound._sound)
 @:access(openfl.media.Sound.__buffer)
 
-class ChartingState extends MusicBeatState
-{
-	public static var noteTypeList:Array<String> = //Used for backwards compatibility with 0.1 - 0.3.2 charts, though, you should add your hardcoded custom note types here too.
-	[
+class ChartingState extends MusicBeatState {
+	public static var noteTypeList:Array<String> = [ //Used for backwards compatibility with 0.1 - 0.3.2 charts, though, you should add your hardcoded custom note types here too.
 		'',
 		'Alt Animation',
 		'Hey!',
@@ -61,21 +59,23 @@ class ChartingState extends MusicBeatState
 	var curNoteTypes:Array<String> = [];
 	var undos = [];
 	var redos = [];
-	var eventStuff:Array<Dynamic> =
-	[
-		['', "Nothing. Yep, that's right."],
+	var eventStuff:Array<Dynamic> = [
+		['', ""],
+		['Set Camera Position', "Put either the name of the character(s) or X/Y positions."],
+		['Set Camera Zoom', "Adds/Subtracts to the stages default zoom.\nPositive number will zoom in, negative number will zoom out."],
+		['Bop Camera', "Value 1: Camera zoom (Default: 0.015)\nValue 2: UI zoom (Default: 0.03)"],
+		['Set Camera Bopping', "Value 1: Intensity\nValue 2: Frequency (in beats (can do steps by doing .25/.5/.75))"],
+		['Camera Shake', "Value 1: Game Camera Shake\nValue 2: HUD Camera Shake\n\nEvery value works as the following example: \"1, 0.05, 0.5, 0.15\".\nThe first number (1) is the duration.\nThe second number (0.05) is the intensity.\nThe third number (0.5) is the hardness.\nThe fourth number (0.15) is the fade time."],
+		['', ""],
 		['Dadbattle Spotlight', "Used in Dad Battle,\nValue 1: 0/1 = ON/OFF,\n2 = Target Dad\n3 = Target BF"],
 		['Hey!', "Plays the \"Hey!\" animation from Bopeebo,\nValue 1: BF = Only Boyfriend, GF = Only Girlfriend,\nSomething else = Both.\nValue 2: Custom animation duration,\nleave it blank for 0.6s"],
 		['Set GF Speed', "Sets GF head bopping speed,\nValue 1: 1 = Normal speed,\n2 = 1/2 speed, 4 = 1/4 speed etc.\nUsed on Fresh during the beatbox parts.\n\nWarning: Value must be integer!"],
 		['Philly Glow', "Exclusive to Week 3\nValue 1: 0/1/2 = OFF/ON/Reset Gradient\n \nNo, i won't add it to other weeks."],
 		['Kill Henchmen', "For Mom's songs, don't use this please, i love them :("],
-		['Add Camera Zoom', "Used on MILF on that one \"hard\" part\nValue 1: Camera zoom add (Default: 0.015)\nValue 2: UI zoom add (Default: 0.03)\nLeave the values blank if you want to use Default."],
 		['BG Freaks Expression', "Should be used only in \"school\" Stage!"],
 		['Trigger BG Ghouls', "Should be used only in \"schoolEvil\" Stage!"],
 		['Play Animation', "Plays an animation on a Character,\nonce the animation is completed,\nthe animation changes to Idle\n\nValue 1: Animation to play.\nValue 2: Character (Dad, BF, GF)"],
-		['Camera Follow Pos', "Value 1: X\nValue 2: Y\n\nThe camera won't change the follow point\nafter using this, for getting it back\nto normal, leave both values blank."],
 		['Alt Idle Animation', "Sets a specified suffix after the idle animation name.\nYou can use this to trigger 'idle-alt' if you set\nValue 2 to -alt\n\nValue 1: Character to set (Dad, BF or GF)\nValue 2: New suffix (Leave it blank to disable)"],
-		['Screen Shake', "Value 1: Camera shake\nValue 2: HUD shake\n\nEvery value works as the following example: \"1, 0.05\".\nThe first number (1) is the duration.\nThe second number (0.05) is the intensity."],
 		['Change Character', "Value 1: Character to change (Dad, BF, GF)\nValue 2: New character's name"],
 		['Change Scroll Speed', "Value 1: Scroll Speed Multiplier (1 is default)\nValue 2: Time it takes to change fully in seconds."],
 		['Set Property', "Value 1: Variable name\nValue 2: New value"],
@@ -144,6 +144,8 @@ class ChartingState extends MusicBeatState
 	var eventIcon:FlxSprite;
 	var leftIcon:HealthIcon;
 	var rightIcon:HealthIcon;
+	var cameraIcon:FlxSprite;
+	var cameraIconLerp:Float = 0;
 
 	var value1InputText:FlxUIInputText;
 	var value2InputText:FlxUIInputText;
@@ -240,17 +242,22 @@ class ChartingState extends MusicBeatState
 		eventIcon.antialiasing = ClientPrefs.data.antialiasing;
 		leftIcon = new HealthIcon('bf');
 		rightIcon = new HealthIcon('dad');
+		cameraIcon = new FlxSprite(getCameraIconPosition(), 0).loadGraphic(Paths.image('cameraIcon'));
+		cameraIcon.antialiasing = ClientPrefs.data.antialiasing;
 		eventIcon.scrollFactor.set(1, 1);
 		leftIcon.scrollFactor.set(1, 1);
 		rightIcon.scrollFactor.set(1, 1);
+		cameraIcon.scrollFactor.set(1, 1);
 
 		eventIcon.setGraphicSize(30, 30);
 		leftIcon.setGraphicSize(0, 45);
 		rightIcon.setGraphicSize(0, 45);
+		cameraIcon.setGraphicSize(40, 40);
 
 		add(eventIcon);
 		add(leftIcon);
 		add(rightIcon);
+		add(cameraIcon);
 
 		leftIcon.setPosition(GRID_SIZE + 10, -100);
 		rightIcon.setPosition(GRID_SIZE * 5.2, -100);
@@ -630,9 +637,11 @@ class ChartingState extends MusicBeatState
 		initPsychCamera().follow(camPos, LOCKON, 999);
 	}
 
+	function millisecondsApart(time1:Float, time2:Float):Bool {
+		return time1 >= time2 - 1.5 && time1 <= time2 + 1.5;
+	}
+
 	var stepperBeats:FlxUINumericStepper;
-	var check_mustHitSection:FlxUICheckBox;
-	var check_gfSection:FlxUICheckBox;
 	var check_changeBPM:FlxUICheckBox;
 	var stepperSectionBPM:FlxUINumericStepper;
 	var check_altAnim:FlxUICheckBox;
@@ -645,17 +654,44 @@ class ChartingState extends MusicBeatState
 		var tab_group_section = new FlxUI(null, UI_box);
 		tab_group_section.name = 'Section';
 
-		check_mustHitSection = new FlxUICheckBox(10, 15, null, null, "Must hit section", 100);
-		check_mustHitSection.name = 'check_mustHit';
-		check_mustHitSection.checked = _song.notes[curSec].mustHitSection;
-
-		check_gfSection = new FlxUICheckBox(10, check_mustHitSection.y + 22, null, null, "GF section", 100);
-		check_gfSection.name = 'check_gf';
-		check_gfSection.checked = _song.notes[curSec].gfSection;
-		// _song.needsVoices = check_mustHit.checked;
-
-		check_altAnim = new FlxUICheckBox(check_gfSection.x + 120, check_gfSection.y, null, null, "Alt Animation", 100);
+		check_altAnim = new FlxUICheckBox(10, 15, null, null, "Alt Animation", 100);
 		check_altAnim.checked = _song.notes[curSec].altAnim;
+
+		var camPosition1:String = 'bf';
+		var camPosition2:String = '';
+
+		var moveCam:FlxButton = new FlxButton(10, check_altAnim.y + 30, "Move Camera", function() {
+			var placementTime = millisecondsApart(sectionStartTime(), Conductor.stepToSeconds(curStep)) ? sectionStartTime() : Conductor.stepToSeconds(curStep);
+			var addedToExisting = false;
+			for (i in 0..._song.events.length) {
+				if (millisecondsApart(_song.events[i][0], placementTime)) {
+					var overrodeExisting = false;
+						for (j in 0..._song.events[i][1].length) {
+						if (_song.events[i][1][j][0] == 'Set Camera Position') {
+							_song.events[i][1][j][1] = camPosition1;
+							_song.events[i][1][j][2] = camPosition2;
+							overrodeExisting = true;
+						}
+					}
+					if (!overrodeExisting)
+						_song.events[i][1].push(['Set Camera Position', camPosition1, camPosition2]);
+					addedToExisting = true;
+				}
+			}
+			if (!addedToExisting)
+				cast(_song.events, Array<Dynamic>).push([placementTime, [['Set Camera Position', camPosition1, camPosition2]]]);
+			updateGrid();
+		});
+
+		var camPos1:FlxUIDropDownMenu = new FlxUIDropDownMenu(moveCam.x + 100, moveCam.y, FlxUIDropDownMenu.makeStrIdLabelArray(['bf', 'dad', 'gf']),
+			function(character:String) { camPosition1 = character; }
+		);
+		blockPressWhileScrolling.push(camPos1);
+
+		var camPos2:FlxUIDropDownMenu = new FlxUIDropDownMenu(camPos1.x, camPos1.y + 40, FlxUIDropDownMenu.makeStrIdLabelArray(['', 'bf', 'dad', 'gf']),
+			function(character:String) { camPosition2 = character; }
+		);
+		blockPressWhileScrolling.push(camPos2);
 
 		stepperBeats = new FlxUINumericStepper(10, 100, 1, 4, 1, 7, 2);
 		stepperBeats.value = getSectionBeats();
@@ -879,11 +915,14 @@ class ChartingState extends MusicBeatState
 		});
 
 		tab_group_section.add(new FlxText(stepperBeats.x, stepperBeats.y - 15, 0, 'Beats per Section:'));
+		tab_group_section.add(new FlxText(camPos1.x, camPos1.y - 15, 0, 'Camera Position 1:'));
+		tab_group_section.add(new FlxText(camPos2.x, camPos2.y - 15, 0, 'Camera Position 2:'));
 		tab_group_section.add(stepperBeats);
 		tab_group_section.add(stepperSectionBPM);
-		tab_group_section.add(check_mustHitSection);
-		tab_group_section.add(check_gfSection);
 		tab_group_section.add(check_altAnim);
+		tab_group_section.add(moveCam);
+		tab_group_section.add(camPos2);
+		tab_group_section.add(camPos1);
 		tab_group_section.add(check_changeBPM);
 		tab_group_section.add(copyButton);
 		tab_group_section.add(pasteButton);
@@ -1568,18 +1607,6 @@ class ChartingState extends MusicBeatState
 			var label = check.getLabel().text;
 			switch (label)
 			{
-				case 'Must hit section':
-					_song.notes[curSec].mustHitSection = check.checked;
-
-					updateGrid();
-					updateHeads();
-
-				case 'GF section':
-					_song.notes[curSec].gfSection = check.checked;
-
-					updateGrid();
-					updateHeads();
-
 				case 'Change BPM':
 					_song.notes[curSec].changeBPM = check.checked;
 					FlxG.log.add('changed bpm shit');
@@ -2143,6 +2170,10 @@ class ChartingState extends MusicBeatState
 		leftIcon.y = strumLine.y - 100;
 		rightIcon.y = strumLine.y - 100;
 
+		cameraIconLerp = FlxMath.lerp(cameraIconLerp, getCameraIconPosition(), elapsed * 10 * playbackSpeed);
+		cameraIcon.x = cameraIconLerp;
+		cameraIcon.y = strumLine.y - 85;
+
 		#if FLX_PITCH
 		// PLAYBACK SPEED CONTROLS //
 		var holdingShift = FlxG.keys.pressed.SHIFT;
@@ -2181,7 +2212,7 @@ class ChartingState extends MusicBeatState
 			note.alpha = 1;
 			if(curSelectedNote != null) {
 				var noteDataToCheck:Int = note.noteData;
-				if(noteDataToCheck > -1 && note.mustPress != _song.notes[curSec].mustHitSection) noteDataToCheck += 4;
+				if(noteDataToCheck > -1 && note.mustPress) noteDataToCheck += 4;
 
 				if (curSelectedNote[0] == note.strumTime && ((curSelectedNote[2] == null && noteDataToCheck < 0) || (curSelectedNote[2] != null && curSelectedNote[1] == noteDataToCheck)))
 				{
@@ -2196,7 +2227,7 @@ class ChartingState extends MusicBeatState
 				if(note.strumTime > lastConductorPos && FlxG.sound.music.playing && note.noteData > -1) {
 					var data:Int = note.noteData % 4;
 					var noteDataToCheck:Int = note.noteData;
-					if(noteDataToCheck > -1 && note.mustPress != _song.notes[curSec].mustHitSection) noteDataToCheck += 4;
+					if(noteDataToCheck > -1 && note.mustPress) noteDataToCheck += 4;
 						strumLineNotes.members[noteDataToCheck].playAnim('confirm', true);
 						strumLineNotes.members[noteDataToCheck].resetAnim = ((note.sustainLength / 1000) + 0.15) / playbackSpeed;
 						strumLineNotes.members[noteDataToCheck].copyNoteColor(note);
@@ -2212,7 +2243,7 @@ class ChartingState extends MusicBeatState
 						}
 
 						data = note.noteData;
-						if(note.mustPress != _song.notes[curSec].mustHitSection)
+						if(note.mustPress)
 						{
 							data += 4;
 						}
@@ -2232,6 +2263,30 @@ class ChartingState extends MusicBeatState
 		}
 		lastConductorPos = Conductor.songPosition;
 		super.update(elapsed);
+	}
+
+	function getCameraIconPosition():Float {
+		var lastSetCamPos = '';
+		var possibleEvents = _song.events.filter(function(events:Dynamic):Bool {
+			var hasSetCameraPos = false;
+			for (event in cast(events[1], Array<Dynamic>))
+				if (event[0] == 'Set Camera Position') hasSetCameraPos = true;
+			return events[0] <= Conductor.songPosition && hasSetCameraPos;
+		});
+		possibleEvents.sort(sortByTime);
+		if (possibleEvents.length <= 0) return eventIcon.x - 100;
+		var events = possibleEvents[possibleEvents.length-1];
+		for (event in cast(events[1], Array<Dynamic>)) {
+			if (event[0] == 'Set Camera Position') {
+				lastSetCamPos = event[1];
+				if (event[1] == 'gf' || event[2] != '') lastSetCamPos = 'middle';
+				if (!Math.isNaN(Std.parseFloat(event[1]))) lastSetCamPos = 'elsewhere';
+			}
+		}
+		return lastSetCamPos == 'bf' ? rightIcon.x + 30
+			 : lastSetCamPos == 'dad' ? leftIcon.x + 30
+			 : lastSetCamPos == 'middle' ? FlxMath.lerp(rightIcon.x, leftIcon.x, 0.5) + 10
+			 : eventIcon.x - 100;
 	}
 
 	function pauseAndSetVocalsTime()
@@ -2651,8 +2706,6 @@ class ChartingState extends MusicBeatState
 		var sec = _song.notes[curSec];
 
 		stepperBeats.value = getSectionBeats();
-		check_mustHitSection.checked = sec.mustHitSection;
-		check_gfSection.checked = sec.gfSection;
 		check_altAnim.checked = sec.altAnim;
 		check_changeBPM.checked = sec.changeBPM;
 		stepperSectionBPM.value = sec.bpm;
@@ -2679,18 +2732,8 @@ class ChartingState extends MusicBeatState
 
 	function updateHeads():Void
 	{
-		if (_song.notes[curSec].mustHitSection)
-		{
-			leftIcon.changeIcon(characterData.iconP1);
-			rightIcon.changeIcon(characterData.iconP2);
-			if (_song.notes[curSec].gfSection) leftIcon.changeIcon('gf');
-		}
-		else
-		{
-			leftIcon.changeIcon(characterData.iconP2);
-			rightIcon.changeIcon(characterData.iconP1);
-			if (_song.notes[curSec].gfSection) leftIcon.changeIcon('gf');
-		}
+		leftIcon.changeIcon(characterData.iconP2);
+		rightIcon.changeIcon(characterData.iconP1);
 	}
 
 	var characterFailed:Bool = false;
@@ -2829,8 +2872,7 @@ class ChartingState extends MusicBeatState
 				curRenderedNoteType.add(daText);
 				daText.sprTracker = note;
 			}
-			note.mustPress = _song.notes[curSec].mustHitSection;
-			if(i[1] > 3) note.mustPress = !note.mustPress;
+			note.mustPress = i[1] > 3;
 		}
 
 		// CURRENT EVENTS
@@ -2921,13 +2963,6 @@ class ChartingState extends MusicBeatState
 		note.setGraphicSize(GRID_SIZE, GRID_SIZE);
 		note.updateHitbox();
 		note.x = Math.floor(daNoteInfo * GRID_SIZE) + GRID_SIZE;
-		if(sectionOffset != 0 && _song.notes[curSec].mustHitSection != _song.notes[curSec+sectionOffset].mustHitSection) {
-			if(daNoteInfo > 3) {
-				note.x -= GRID_SIZE * 4;
-			} else if(daSus != null) {
-				note.x += GRID_SIZE * 4;
-			}
-		}
 
 		var beats:Float = getSectionBeats(sectionOffset);
 		note.y = getYfromStrumNotes(daStrumTime - sectionStartTime(), beats);
@@ -2963,8 +2998,6 @@ class ChartingState extends MusicBeatState
 			sectionBeats: sectionBeats,
 			bpm: _song.bpm,
 			changeBPM: false,
-			mustHitSection: true,
-			gfSection: false,
 			sectionNotes: [],
 			altAnim: false
 		};
@@ -2978,7 +3011,7 @@ class ChartingState extends MusicBeatState
 
 		if(noteDataToCheck > -1)
 		{
-			if(note.mustPress != _song.notes[curSec].mustHitSection) noteDataToCheck += 4;
+			if(note.mustPress) noteDataToCheck += 4;
 			for (i in _song.notes[curSec].sectionNotes)
 			{
 				if (i != curSelectedNote && i.length > 2 && i[0] == note.strumTime && i[1] == noteDataToCheck)
@@ -3009,7 +3042,7 @@ class ChartingState extends MusicBeatState
 	function deleteNote(note:Note):Void
 	{
 		var noteDataToCheck:Int = note.noteData;
-		if(noteDataToCheck > -1 && note.mustPress != _song.notes[curSec].mustHitSection) noteDataToCheck += 4;
+		if(noteDataToCheck > -1 && note.mustPress) noteDataToCheck += 4;
 
 		if(note.noteData > -1) //Normal Notes
 		{

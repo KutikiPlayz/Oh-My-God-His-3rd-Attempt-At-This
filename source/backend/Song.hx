@@ -50,13 +50,13 @@ class Song
 
 	private static function onLoadJson(songJson:Dynamic) // Convert old charts to newest format
 	{
-		if(songJson.gfVersion == null)
+		if(songJson.gfVersion == null) // Convert player3 to gfVersion
 		{
 			songJson.gfVersion = songJson.player3;
 			songJson.player3 = null;
 		}
 
-		if(songJson.events == null)
+		if(songJson.events == null) // Move any events from notes to events
 		{
 			songJson.events = [];
 			for (secNum in 0...songJson.notes.length)
@@ -79,6 +79,61 @@ class Song
 				}
 			}
 		}
+
+		for (i in 0...songJson.notes.length) { // Convert mustHitSections and gfSections to a camera event
+			var prevSection = songJson.notes[i-1];
+			var section = songJson.notes[i];
+			if (section.mustHitSection != null && section.gfSection != null) {
+				var gfSectionChanged = prevSection != null && section.gfSection != prevSection.gfSection;
+				var mustHitSectionChanged = prevSection != null && !section.gfSection && section.mustHitSection != prevSection.mustHitSection;
+				if (prevSection == null || gfSectionChanged || mustHitSectionChanged) {
+					var addedToExisting = false;
+					for (j in 0...songJson.events.length) {
+						if (millisecondsApart(songJson.events[j][0], sectionStartTime(songJson, i))) {
+							songJson.events[j][1].push(['Set Camera Position', section.gfSection ? 'gf' : section.mustHitSection ? 'bf' : 'dad', '']);
+							addedToExisting = true;
+						}
+					}
+					if (!addedToExisting)
+						cast(songJson.events, Array<Dynamic>).push([sectionStartTime(songJson, i), [['Set Camera Position', section.gfSection ? 'gf' : section.mustHitSection ? 'bf' : 'dad', '']]]);
+				}
+				if (section.mustHitSection) {
+					for (j in 0...section.sectionNotes.length)
+						section.sectionNotes[j][1] = (section.sectionNotes[j][1] + 4) % 8;
+				}
+
+				if (section.gfSection) {
+					var notes = cast(section.sectionNotes, Array<Dynamic>);
+					for (j in 0...notes.length) {
+						if (section.mustHitSection)
+							if (notes[j][1] > 3) notes[j][3] = 'GF Sing';
+						else
+							if (notes[j][1] < 4) notes[j][3] = 'GF Sing';
+					}
+				}
+			}
+		}
+		for (i in 0...songJson.notes.length) { // Remove mustHitSections and gfSections
+			songJson.notes[i].mustHitSection = null;
+			songJson.notes[i].gfSection = null;
+		}
+	}
+
+	static function millisecondsApart(time1:Float, time2:Float):Bool {
+		return time1 >= time2 - 1.5 && time1 <= time2 + 1.5;
+	}
+
+	static function sectionStartTime(song:Dynamic, section:Int = 0):Float {
+		var daBPM:Float = song.bpm;
+		var daPos:Float = 0;
+		for (i in 0...section) {
+			if (song.notes[i] != null) {
+				if (song.notes[i].changeBPM)
+					daBPM = song.notes[i].bpm;
+				daPos += song.notes[i].sectionBeats > 0 ? song.notes[i].sectionBeats : 4 * (1000 * 60 / daBPM);
+			}
+		}
+		return daPos;
 	}
 
 	public function new(song, notes, bpm)

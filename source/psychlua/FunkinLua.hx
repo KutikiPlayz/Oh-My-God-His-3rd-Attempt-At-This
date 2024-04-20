@@ -133,9 +133,10 @@ class FunkinLua {
 		set('version', MainMenuState.psychEngineVersion.trim());
 
 		set('inGameOver', false);
-		set('mustHitSection', false);
 		set('altAnim', false);
-		set('gfSection', false);
+		set('mustHitSection', game.cameraIsOn[0] == 'boyfriend');
+		set('gfSection', game.cameraIsOn[0] == 'gf');
+		set('cameraIsOn', game.cameraIsOn);
 
 		// Gameplay settings
 		set('healthGainMult', game.healthGain);
@@ -878,13 +879,8 @@ class FunkinLua {
 					game.boyfriendGroup.y = value;
 			}
 		});
-		Lua_helper.add_callback(lua, "cameraSetTarget", function(target:String) {
-			var isDad:Bool = false;
-			if(target == 'dad') {
-				isDad = true;
-			}
-			game.moveCamera(isDad);
-			return isDad;
+		Lua_helper.add_callback(lua, "cameraSetTarget", function(target:String, target2:String) {
+			game.moveCamera(target, target2);
 		});
 		Lua_helper.add_callback(lua, "cameraShake", function(camera:String, intensity:Float, duration:Float, hardness:Float = 0.5, fadeTime:Float = 0.15) {
 			LuaUtils.cameraFromString(camera).shake(intensity, duration / PlayState.instance.playbackRate, hardness * PlayState.instance.playbackRate, fadeTime / PlayState.instance.playbackRate);
