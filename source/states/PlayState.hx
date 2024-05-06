@@ -175,7 +175,7 @@ class PlayState extends MusicBeatState
 
 	public var camZoomingFreq:Float = 4;
 	public var camZoomingMult:Float = 1;
-	public var camZoomingDecay:Float = 1;
+	public var camZoomingDecay:Float = 1.5;
 	private var curSong:String = "";
 
 	public var gfSpeed:Int = 1;
@@ -657,11 +657,13 @@ class PlayState extends MusicBeatState
 	}
 
 	function getStartingCamPos() {
-		for (i in 0...SONG.events[0][1].length) {
-			if (SONG.events[0][1][i][0] == 'Set Camera Position')
-				return SONG.events[0][1][i][1];
+		if (SONG.events[0] != null) {
+			for (i in 0...SONG.events[0][1].length) {
+				if (SONG.events[0][1][i][0] == 'Set Camera Position')
+					return [SONG.events[0][1][i][1], SONG.events[0][1][i][2]];
+			}
 		}
-		return 'gf';
+		return ['gf', ''];
 	}
 
 	function set_songSpeed(value:Float):Float
@@ -1650,7 +1652,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if(!inCutscene && !paused && !freezeCamera) {
-			FlxG.camera.followLerp = 2.4 * cameraSpeed * playbackRate;
+			FlxG.camera.followLerp = 4 * cameraSpeed * playbackRate;
 			if(!startingSong && !endingSong && boyfriend.getAnimationName().startsWith('idle')) {
 				boyfriendIdleTime += elapsed;
 				if(boyfriendIdleTime >= 0.15) { // Kind of a mercy thing for making the achievement easier to get as it's apparently frustrating to some playerss
@@ -2001,11 +2003,10 @@ class PlayState extends MusicBeatState
 
 			case 'Bop Camera':
 				if (ClientPrefs.data.camZooms && FlxG.camera.zoom < 1.35) {
-					if (flValue1 == null) flValue1 = 0.015;
-					if (flValue2 == null) flValue2 = 0.03;
+					if (flValue1 == null) flValue1 = 1;
 
-					FlxG.camera.zoom += flValue1;
-					camHUD.zoom += flValue2;
+					FlxG.camera.zoom += 0.015 * flValue1;
+					camHUD.zoom += 0.03 * flValue1;
 				}
 
 			case 'Set Camera Bopping':
@@ -2279,7 +2280,11 @@ class PlayState extends MusicBeatState
 	public var cameraIsOn:Array<String> = ['', ''];
 	public function moveCamera(who:String = '', who2:String = '') {
 		var instant = false;
-		if (who == '') { instant = true; who = getStartingCamPos(); }
+		if (who == '' && who2 == '') {
+			instant = true;
+			who = getStartingCamPos()[0];
+			who2 = getStartingCamPos()[1];
+		}
 
 		var position1 = FlxPoint.get();
 		var char1 = dad;
@@ -2332,6 +2337,7 @@ class PlayState extends MusicBeatState
 		callOnScripts('onMoveCamera', bah);
 		setOnScripts('mustHitSection', cameraIsOn[0] == 'boyfriend');
 		setOnScripts('gfSection', cameraIsOn[0] == 'gf');
+		setOnScripts('duetSection', cameraIsOn[1] != '');
 		setOnScripts('cameraIsOn', cameraIsOn);
 	}
 
@@ -3275,7 +3281,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		if (FlxG.camera.zoom < 1.35 && ClientPrefs.data.camZooms && (curStep / 4) % camZoomingFreq == 0) {
+		if (FlxG.camera.zoom < 1.35 && ClientPrefs.data.camZooms && curStep % (camZoomingFreq * 4) == 0) {
 			FlxG.camera.zoom += 0.015 * camZoomingMult;
 			camHUD.zoom += 0.03 * camZoomingMult;
 		}

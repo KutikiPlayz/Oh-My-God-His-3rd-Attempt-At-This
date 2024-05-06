@@ -63,7 +63,7 @@ class ChartingState extends MusicBeatState {
 		['', ""],
 		['Set Camera Position', "Put either the name of the character(s) or X/Y positions."],
 		['Set Camera Zoom', "Adds/Subtracts to the stages default zoom.\nPositive number will zoom in, negative number will zoom out."],
-		['Bop Camera', "Value 1: Camera zoom (Default: 0.015)\nValue 2: UI zoom (Default: 0.03)"],
+		['Bop Camera', "Value 1: Intensity"],
 		['Set Camera Bopping', "Value 1: Intensity\nValue 2: Frequency (in beats (can do steps by doing .25/.5/.75))"],
 		['Camera Shake', "Value 1: Game Camera Shake\nValue 2: HUD Camera Shake\n\nEvery value works as the following example: \"1, 0.05, 0.5, 0.15\".\nThe first number (1) is the duration.\nThe second number (0.05) is the intensity.\nThe third number (0.5) is the hardness.\nThe fourth number (0.15) is the fade time."],
 		['', ""],

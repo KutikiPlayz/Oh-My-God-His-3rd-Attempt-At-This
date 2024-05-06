@@ -136,6 +136,7 @@ class FunkinLua {
 		set('altAnim', false);
 		set('mustHitSection', game.cameraIsOn[0] == 'boyfriend');
 		set('gfSection', game.cameraIsOn[0] == 'gf');
+		set('duetSection', game.cameraIsOn[1] != '');
 		set('cameraIsOn', game.cameraIsOn);
 
 		// Gameplay settings
