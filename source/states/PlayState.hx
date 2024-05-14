@@ -2332,8 +2332,7 @@ class PlayState extends MusicBeatState
 		camFollow.setPosition(FlxMath.lerp(position1.x, position2.x, 0.5), FlxMath.lerp(position1.y, position2.y, 0.5));
 		if (instant) FlxG.camera.snapToTarget();
 
-		var bah = [who];
-		if (who2 != '') bah.push(who2);
+		var bah = [who, who2];
 		callOnScripts('onMoveCamera', bah);
 		setOnScripts('mustHitSection', cameraIsOn[0] == 'boyfriend');
 		setOnScripts('gfSection', cameraIsOn[0] == 'gf');
